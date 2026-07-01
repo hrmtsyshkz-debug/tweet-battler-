@@ -31,11 +31,11 @@ export default async function ResultSharePage({ params }: { params: Promise<{ da
         {decoded ? (
           <>
             <h2>{decoded.winner.name} の勝利！</h2>
-            <p style={{ color: "#cdd9f5", fontSize: 14, marginTop: 10 }}>
+            <p style={{ color: "var(--ink-soft)", fontSize: 14, marginTop: 10 }}>
               決まり技：「{decoded.finishingMove || "不明の一撃"}」
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/og?d=${data}`} alt="バトル結果" style={{ maxWidth: "100%", border: "3px solid #4a5a8a", marginTop: 16 }} />
+            <img src={`/api/og?d=${data}`} alt="バトル結果" style={{ maxWidth: "100%", borderRadius: 20, boxShadow: "var(--shadow-card)", marginTop: 16 }} />
           </>
         ) : (
           <p>この結果データは読み取れませんでした。</p>

@@ -24,7 +24,7 @@ export function QrOverlay({ fighter, onClose }: { fighter: Fighter | null; onClo
       <div className="overlay-box">
         <h3>{fighter.name} のQRバトルカード</h3>
         <div className="qr-target">
-          {error ? <span style={{ color: "#e24b4a", fontSize: 12 }}>{error}</span> : <canvas ref={canvasRef} />}
+          {error ? <span style={{ color: "var(--danger)", fontSize: 12 }}>{error}</span> : <canvas ref={canvasRef} />}
         </div>
         <div className="scan-status">このQRを相手に見せて「QR/バーコードで召喚」から読み取ってもらおう</div>
         <div className="overlay-close">

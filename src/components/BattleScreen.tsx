@@ -7,7 +7,7 @@ import { SpriteCanvas } from "./SpriteCanvas";
 
 function HpBox({ side, name, level, hp, maxHp }: { side: "a" | "b"; name: string; level: number; hp: number; maxHp: number }) {
   const pct = Math.max(0, Math.round((hp / maxHp) * 100));
-  const color = pct > 50 ? "#4ade80" : pct > 20 ? "#facc15" : "#ef4444";
+  const color = pct > 50 ? "#4ade80" : pct > 20 ? "#facc15" : "#f97362";
   return (
     <div className={"hpbox " + (side === "a" ? "player" : "opp")}>
       <div className="row1">
