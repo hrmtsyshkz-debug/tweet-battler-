@@ -68,6 +68,22 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .chip.active { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 700; }
 .btnrow { text-align: center; margin: 24px 0; }
+.panel.with-fight-bar { margin-bottom: 88px; }
+.fight-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: rgba(238, 243, 251, 0.92);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 -4px 14px rgba(58, 158, 224, 0.12);
+}
+.fight-bar-inner { width: 100%; max-width: 900px; text-align: center; }
+.fight-bar-inner button.big { width: 100%; max-width: 360px; }
 button.big {
   font-family: inherit;
   background: var(--accent);

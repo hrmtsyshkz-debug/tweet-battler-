@@ -21,24 +21,28 @@ export function StatsScreen({
   onFight: () => void;
 }) {
   return (
-    <div className="panel">
-      <div className="stats-grid">
-        <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} />
-        <FighterCard fighter={fighterB} mirror={true} badgeTier={0} xHandle={xHandleB} />
+    <>
+      <div className="panel with-fight-bar">
+        <div className="stats-grid">
+          <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} />
+          <FighterCard fighter={fighterB} mirror={true} badgeTier={0} xHandle={xHandleB} />
+        </div>
+        <div className="cardaction-row">
+          <button className="small" type="button" onClick={onIssueQr}>
+            あなたのQRバトルカードを発行
+          </button>
+          <button className="small" type="button" onClick={onIssueChallenge}>
+            挑戦状URLを発行
+          </button>
+        </div>
       </div>
-      <div className="cardaction-row">
-        <button className="small" type="button" onClick={onIssueQr}>
-          あなたのQRバトルカードを発行
-        </button>
-        <button className="small" type="button" onClick={onIssueChallenge}>
-          挑戦状URLを発行
-        </button>
+      <div className="fight-bar">
+        <div className="fight-bar-inner">
+          <button className="big" type="button" onClick={onFight}>
+            たたかう！
+          </button>
+        </div>
       </div>
-      <div className="btnrow">
-        <button className="big" type="button" onClick={onFight}>
-          たたかう！
-        </button>
-      </div>
-    </div>
+    </>
   );
 }
