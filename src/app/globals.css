@@ -142,9 +142,17 @@ button.small:hover { border-color: var(--accent); background: var(--bg); }
 .platform { position: absolute; border-radius: 50%; background: #ffffff; opacity: 0.55; }
 .platform.opp { width: 110px; height: 30px; top: 96px; right: 54px; }
 .platform.player { width: 170px; height: 42px; bottom: 34px; left: 40px; }
-.sprite-wrap { position: absolute; }
+.sprite-wrap { position: absolute; z-index: 1; }
 .sprite-wrap.opp { top: 26px; right: 66px; width: 96px; height: 96px; }
 .sprite-wrap.player { bottom: 44px; left: 46px; width: 140px; height: 140px; }
+@media (max-width: 480px) {
+  .battle-scene { height: 230px; }
+  .platform.opp { width: 80px; height: 22px; top: 78px; right: 30px; }
+  .platform.player { width: 120px; height: 30px; bottom: 24px; left: 16px; }
+  .sprite-wrap.opp { top: 16px; right: 42px; width: 70px; height: 70px; }
+  .sprite-wrap.player { bottom: 30px; left: 12px; width: 100px; height: 100px; }
+  .hpbox { min-width: 130px; padding: 6px 9px; }
+}
 .sprite-wrap canvas { width: 100%; height: 100%; image-rendering: pixelated; }
 .sprite-wrap.attack-anim { animation: bumpAnim 0.3s ease; }
 .sprite-wrap.hit-anim { animation: hitAnim 0.3s ease; }
@@ -166,6 +174,7 @@ button.small:hover { border-color: var(--accent); background: var(--bg); }
 }
 .hpbox {
   position: absolute;
+  z-index: 2;
   background: #ffffff;
   border: none;
   box-shadow: var(--shadow-soft);
@@ -182,7 +191,7 @@ button.small:hover { border-color: var(--accent); background: var(--bg); }
 .hpbox .track { flex: 1; height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
 .hpbox .fill { height: 100%; background: var(--success); border-radius: 999px; transition: width 0.4s ease, background 0.4s ease; }
 .hpbox .hptext { text-align: right; font-size: 10px; margin-top: 2px; color: var(--ink-soft); }
-.loglines { font-size: 13px; line-height: 1.9; min-height: 90px; color: var(--ink); }
+.loglines { font-size: 13px; line-height: 1.9; height: 220px; overflow-y: auto; color: var(--ink); }
 .loglines .line { opacity: 0; animation: fadein 0.3s forwards; }
 .loglines .line.event { color: var(--accent-2-dark); font-weight: 500; }
 .loglines .line.crit { color: var(--danger); font-weight: 700; }
