@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadProfile, saveProfile, titleLabel, xpToLevel } from "@/lib/profile";
+import { loadProfile, saveProfile, titleLabel, toFighterFromSaved, xpToLevel } from "@/lib/profile";
 import { Profile } from "@/lib/types";
+import { FighterCard } from "./FighterCard";
 
 export function ProfileOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -18,7 +19,7 @@ export function ProfileOverlay({ open, onClose }: { open: boolean; onClose: () =
 
   function handleReset() {
     if (window.confirm("記録をリセットしますか？")) {
-      const fresh: Profile = { battles: 0, wins: 0, streak: 0, bestStreak: 0, xp: 0, titles: [] };
+      const fresh: Profile = { battles: 0, wins: 0, streak: 0, bestStreak: 0, xp: 0, titles: [], lastFighter: null };
       saveProfile(fresh);
       setProfile(fresh);
     }
@@ -62,6 +63,12 @@ export function ProfileOverlay({ open, onClose }: { open: boolean; onClose: () =
             ))
           )}
         </div>
+        {profile.lastFighter && (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ margin: "10px 0 6px" }}>直近のあなたのキャラ</label>
+            <FighterCard fighter={toFighterFromSaved(profile.lastFighter)} mirror={false} badgeTier={Math.min(3, Math.floor(lv / 5))} />
+          </div>
+        )}
         <div className="overlay-close" style={{ marginTop: 14 }}>
           <button className="small" type="button" onClick={handleReset}>
             記録をリセット

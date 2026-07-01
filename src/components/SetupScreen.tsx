@@ -10,10 +10,38 @@ export interface SetupState {
   nameA: string;
   textA: string;
   forcedTypeA: string | null;
+  xHandleA: string;
   nameB: string;
   textB: string;
   forcedTypeB: string | null;
   xHandleB: string;
+}
+
+function XHandleField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [avatarOk, setAvatarOk] = useState(false);
+  const handle = value.trim().replace(/^@/, "");
+  const avatarUrl = handle ? `https://unavatar.io/x/${encodeURIComponent(handle)}?fallback=false` : "";
+
+  return (
+    <>
+      <label>X（Twitter）ID（@なし・任意/実験的機能）</label>
+      <input type="text" placeholder="例：example_id" value={value} onChange={(e) => onChange(e.target.value)} />
+      <div className="avatar-row">
+        {avatarUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="avatar-preview"
+            alt=""
+            src={avatarUrl}
+            style={{ display: avatarOk ? "inline-block" : "none" }}
+            onLoad={() => setAvatarOk(true)}
+            onError={() => setAvatarOk(false)}
+          />
+        )}
+        <span className="avatar-hint">※非公式取得のため表示できないことがあります</span>
+      </div>
+    </>
+  );
 }
 
 export function SetupScreen({
@@ -29,10 +57,6 @@ export function SetupScreen({
   onAchievements: () => void;
   onStart: () => void;
 }) {
-  const [avatarOk, setAvatarOk] = useState(false);
-  const handle = state.xHandleB.trim().replace(/^@/, "");
-  const avatarUrl = handle ? `https://unavatar.io/x/${encodeURIComponent(handle)}?fallback=false` : "";
-
   function handleRandomB() {
     const name = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
     const typeKey = TYPES[Math.floor(Math.random() * TYPES.length)].key;
@@ -60,6 +84,7 @@ export function SetupScreen({
           />
           <label>または属性を直接選ぶ</label>
           <TypeChips selected={state.forcedTypeA} onSelect={(key) => onChange({ forcedTypeA: key })} />
+          <XHandleField value={state.xHandleA} onChange={(v) => onChange({ xHandleA: v })} />
         </div>
         <div className="fcard">
           <h3>相手</h3>
@@ -79,27 +104,7 @@ export function SetupScreen({
           />
           <label>または属性を直接選ぶ</label>
           <TypeChips selected={state.forcedTypeB} onSelect={(key) => onChange({ forcedTypeB: key })} />
-          <label>X（Twitter）ID（@なし・任意/実験的機能）</label>
-          <input
-            type="text"
-            placeholder="例：example_id"
-            value={state.xHandleB}
-            onChange={(e) => onChange({ xHandleB: e.target.value })}
-          />
-          <div className="avatar-row">
-            {avatarUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                className="avatar-preview"
-                alt=""
-                src={avatarUrl}
-                style={{ display: avatarOk ? "inline-block" : "none" }}
-                onLoad={() => setAvatarOk(true)}
-                onError={() => setAvatarOk(false)}
-              />
-            )}
-            <span className="avatar-hint">※非公式取得のため表示できないことがあります</span>
-          </div>
+          <XHandleField value={state.xHandleB} onChange={(v) => onChange({ xHandleB: v })} />
           <div style={{ textAlign: "right", marginTop: 8 }}>
             <button className="small" type="button" onClick={handleRandomB}>
               ランダム相手で埋める

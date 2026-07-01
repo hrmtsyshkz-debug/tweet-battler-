@@ -1,5 +1,6 @@
 import { Fighter } from "@/lib/types";
 import { SpriteCanvas } from "./SpriteCanvas";
+import { TrainerBadge } from "./TrainerBadge";
 
 function StatBar({ val }: { val: number }) {
   const pct = Math.min(100, Math.round((val / 140) * 100));
@@ -10,11 +11,24 @@ function StatBar({ val }: { val: number }) {
   );
 }
 
-export function FighterCard({ fighter, mirror, badgeTier }: { fighter: Fighter; mirror: boolean; badgeTier: number }) {
+export function FighterCard({
+  fighter,
+  mirror,
+  badgeTier,
+  xHandle,
+}: {
+  fighter: Fighter;
+  mirror: boolean;
+  badgeTier: number;
+  xHandle?: string;
+}) {
   return (
     <div className="statcard">
       <SpriteCanvas fighter={fighter} mirror={mirror} badgeTier={badgeTier} size={90} className="sprite-canvas-stat" />
-      <div className="name">{fighter.name}</div>
+      <div className="name">
+        {fighter.name}
+        <TrainerBadge handle={xHandle} />
+      </div>
       <div
         className="typebadge"
         style={{ background: fighter.type.color + "26", color: fighter.type.color }}

@@ -44,6 +44,16 @@ export interface BattleResult {
   finishingMove: string | null;
 }
 
+export interface SavedFighter {
+  name: string;
+  typeKey: string;
+  hp: number;
+  atk: number;
+  def: number;
+  spd: number;
+  moves: Move[];
+}
+
 export interface Profile {
   battles: number;
   wins: number;
@@ -51,4 +61,5 @@ export interface Profile {
   bestStreak: number;
   xp: number;
   titles: string[];
+  lastFighter?: SavedFighter | null;
 }

@@ -1,4 +1,5 @@
-import { Profile } from "./types";
+import { typeByKey } from "./data";
+import { Fighter, Profile, SavedFighter } from "./types";
 
 export const PROFILE_KEY = "tsubuyakiBattlerProfile_v1";
 
@@ -53,8 +54,34 @@ export function titleLabel(id: string): string {
   return TITLE_MILESTONES.find((t) => t.id === id)?.label ?? id;
 }
 
-export function applyBattleResultToProfile(didWin: boolean): { profile: Profile; newTitles: string[] } {
+export function toFighterFromSaved(sf: SavedFighter): Fighter {
+  return {
+    name: sf.name,
+    typeKey: sf.typeKey,
+    type: typeByKey(sf.typeKey),
+    hp: sf.hp,
+    maxHp: sf.hp,
+    atk: sf.atk,
+    def: sf.def,
+    spd: sf.spd,
+    moves: sf.moves,
+    currentHp: sf.hp,
+  };
+}
+
+export function applyBattleResultToProfile(didWin: boolean, ownFighter?: Fighter): { profile: Profile; newTitles: string[] } {
   const p = loadProfile();
+  if (ownFighter) {
+    p.lastFighter = {
+      name: ownFighter.name,
+      typeKey: ownFighter.typeKey,
+      hp: ownFighter.hp,
+      atk: ownFighter.atk,
+      def: ownFighter.def,
+      spd: ownFighter.spd,
+      moves: ownFighter.moves,
+    };
+  }
   p.battles += 1;
   if (didWin) {
     p.wins += 1;

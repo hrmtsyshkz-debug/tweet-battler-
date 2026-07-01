@@ -4,14 +4,32 @@ import { useEffect, useRef, useState } from "react";
 import { calcLevel } from "@/lib/fighter";
 import { BattleResult, Fighter, LogEntry, Side } from "@/lib/types";
 import { SpriteCanvas } from "./SpriteCanvas";
+import { TrainerBadge } from "./TrainerBadge";
 
-function HpBox({ side, name, level, hp, maxHp }: { side: "a" | "b"; name: string; level: number; hp: number; maxHp: number }) {
+function HpBox({
+  side,
+  name,
+  level,
+  hp,
+  maxHp,
+  xHandle,
+}: {
+  side: "a" | "b";
+  name: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+  xHandle?: string;
+}) {
   const pct = Math.max(0, Math.round((hp / maxHp) * 100));
   const color = pct > 50 ? "#4ade80" : pct > 20 ? "#facc15" : "#f97362";
   return (
     <div className={"hpbox " + (side === "a" ? "player" : "opp")}>
       <div className="row1">
-        <span>{name}</span>
+        <span>
+          {name}
+          <TrainerBadge handle={xHandle} size={18} />
+        </span>
         <span>Lv.{level}</span>
       </div>
       <div className="hpline">
@@ -32,12 +50,16 @@ export function BattleScreen({
   fighterB,
   battleResult,
   badgeTierA,
+  xHandleA,
+  xHandleB,
   onDone,
 }: {
   fighterA: Fighter;
   fighterB: Fighter;
   battleResult: BattleResult;
   badgeTierA: number;
+  xHandleA?: string;
+  xHandleB?: string;
   onDone: () => void;
 }) {
   const [lines, setLines] = useState<LogEntry[]>([]);
@@ -107,8 +129,8 @@ export function BattleScreen({
       <div className="battle-scene">
         <div className="platform opp" />
         <div className="platform player" />
-        <HpBox side="b" name={fighterB.name} level={calcLevel(fighterB)} hp={hpB} maxHp={fighterB.hp} />
-        <HpBox side="a" name={fighterA.name} level={calcLevel(fighterA)} hp={hpA} maxHp={fighterA.hp} />
+        <HpBox side="b" name={fighterB.name} level={calcLevel(fighterB)} hp={hpB} maxHp={fighterB.hp} xHandle={xHandleB} />
+        <HpBox side="a" name={fighterA.name} level={calcLevel(fighterA)} hp={hpA} maxHp={fighterA.hp} xHandle={xHandleA} />
         <div className={"sprite-wrap opp" + (animB ? " " + animB : "")}>
           <SpriteCanvas fighter={fighterB} mirror={true} badgeTier={0} size={120} />
         </div>
