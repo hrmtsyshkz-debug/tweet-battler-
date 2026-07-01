@@ -1,5 +1,6 @@
 import { ACCESSORY } from "./data";
 import { generateSpriteGrid, shadeColor, SPRITE_H, SPRITE_W } from "./sprite";
+import { TEMPLATE_EYE_COL_L, TEMPLATE_EYE_COL_R, TEMPLATE_EYE_ROW } from "./spriteTemplates";
 import { Fighter } from "./types";
 
 export interface SpriteRect {
@@ -49,9 +50,9 @@ export function computeSpriteRects(
     }
   }
 
-  const eyeRow = 2;
-  const eyeColL = 3;
-  const eyeColR = 5;
+  const eyeRow = TEMPLATE_EYE_ROW;
+  const eyeColL = TEMPLATE_EYE_COL_L;
+  const eyeColR = TEMPLATE_EYE_COL_R;
   [eyeColL, eyeColR].forEach((col) => {
     const c = mirror ? W - 1 - col : col;
     rects.push({ x: offsetX + c * cell, y: offsetY + eyeRow * cell, w: cell, h: cell, color: "#ffffff" });

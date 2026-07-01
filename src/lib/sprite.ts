@@ -1,9 +1,10 @@
 import { ACCESSORY } from "./data";
 import { hashString, mulberry32 } from "./rng";
+import { SPRITE_TEMPLATES, TEMPLATE_EYE_COL_L, TEMPLATE_EYE_COL_R, TEMPLATE_EYE_ROW } from "./spriteTemplates";
 import { Fighter } from "./types";
 
-export const SPRITE_W = 9;
-export const SPRITE_H = 8;
+export const SPRITE_W = 14;
+export const SPRITE_H = 14;
 
 export function shadeColor(hex: string, percent: number): string {
   const num = parseInt(hex.replace("#", ""), 16);
@@ -20,6 +21,10 @@ export function generateSpriteGrid(fighter: Fighter): number[][] {
   const seedStr =
     fighter.name + "|" + fighter.typeKey + "|sprite|" + fighter.hp + "-" + fighter.atk + "-" + fighter.def + "-" + fighter.spd;
   const rng = mulberry32(hashString(seedStr));
+  if (SPRITE_TEMPLATES.length > 0) {
+    const template = SPRITE_TEMPLATES[Math.floor(rng() * SPRITE_TEMPLATES.length)];
+    return template.map((row) => row.slice());
+  }
   const W = SPRITE_W;
   const H = SPRITE_H;
   const grid: number[][] = [];
@@ -93,9 +98,9 @@ export function drawSpriteToCanvas(canvas: HTMLCanvasElement | null, fighter: Fi
         ctx.fillRect(offsetX + (dx + 1) * cell - Math.max(1, Math.floor(cell * 0.15)), offsetY + y * cell, Math.max(1, Math.floor(cell * 0.15)), cell);
     }
   }
-  const eyeRow = 2;
-  const eyeColL = 3;
-  const eyeColR = 5;
+  const eyeRow = TEMPLATE_EYE_ROW;
+  const eyeColL = TEMPLATE_EYE_COL_L;
+  const eyeColR = TEMPLATE_EYE_COL_R;
   drawEyePixel(ctx, mirror ? W - 1 - eyeColL : eyeColL, eyeRow, cell, offsetX, offsetY);
   drawEyePixel(ctx, mirror ? W - 1 - eyeColR : eyeColR, eyeRow, cell, offsetX, offsetY);
   const acc = ACCESSORY[fighter.typeKey] || [];
