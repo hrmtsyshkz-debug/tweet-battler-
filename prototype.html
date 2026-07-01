@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>つぶやきバトラー - あなたのSNSが戦う</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #0b0e1a;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px);
+    color: #eaf0ff;
+    font-family: "MS Gothic", "Courier New", monospace;
+    padding: 24px 12px 60px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: #ffe66d;
+    text-shadow: 3px 3px 0 #ff4d6d, -1px -1px 0 #00c2ff;
+    margin: 0 0 6px;
+  }
+  .sub { text-align: center; color: #9db4d8; font-size: 13px; margin-bottom: 28px; letter-spacing: 1px; }
+  .panel {
+    background: #131a2e;
+    border: 3px solid #4a5a8a;
+    box-shadow: 0 0 0 3px #0b0e1a, 0 0 0 6px #4a5a8a, 6px 6px 0 rgba(0,0,0,0.4);
+    border-radius: 2px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .fighters { grid-template-columns: 1fr; } }
+  .fcard { background: #0f1526; border: 2px solid #2c3a63; padding: 14px; border-radius: 2px; }
+  .fcard h3 { margin: 0 0 10px; font-size: 15px; color: #7fe7ff; letter-spacing: 2px; }
+  label { display: block; font-size: 11px; color: #9db4d8; margin: 10px 0 4px; letter-spacing: 1px; }
+  input[type=text], textarea, select {
+    width: 100%;
+    background: #05070f;
+    border: 2px solid #3a4a7a;
+    color: #eaf0ff;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px;
+    border-radius: 2px;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .chip {
+    font-size: 11px; padding: 6px 10px; border: 2px solid #3a4a7a; border-radius: 2px;
+    background: #0f1526; color: #cdd9f5; cursor: pointer; letter-spacing: 1px;
+  }
+  .chip.active { background: #ff4d6d; border-color: #ffe66d; color: #0b0e1a; font-weight: bold; }
+  .btnrow { text-align: center; margin: 24px 0; }
+  button.big {
+    font-family: inherit;
+    background: #ff4d6d;
+    color: #0b0e1a;
+    border: 3px solid #ffe66d;
+    box-shadow: 4px 4px 0 #7a1030;
+    font-size: 16px;
+    letter-spacing: 3px;
+    padding: 14px 32px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  button.big:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #7a1030; }
+  button.small {
+    font-family: inherit;
+    background: #131a2e;
+    color: #7fe7ff;
+    border: 2px solid #3a4a7a;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin: 4px;
+  }
+  button.small:hover { border-color: #7fe7ff; }
+  .hidden { display: none; }
+  .loading { text-align: center; padding: 50px 0; }
+  .loading .msg { font-size: 15px; letter-spacing: 2px; color: #ffe66d; margin-bottom: 20px; }
+  .bar-outer { width: 260px; height: 18px; margin: 0 auto; border: 2px solid #3a4a7a; background: #05070f; }
+  .bar-inner { height: 100%; width: 0%; background: repeating-linear-gradient(90deg,#ff4d6d 0 8px,#ffe66d 8px 16px); transition: width 0.15s linear; }
+  .loading .tip { margin-top: 18px; font-size: 11px; color: #6a7aa8; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+  .statcard { background: #0f1526; border: 2px solid #2c3a63; padding: 14px; border-radius: 2px; }
+  .statcard .name { font-size: 16px; color: #ffe66d; letter-spacing: 1px; margin-bottom: 2px; }
+  .typebadge {
+    display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 2px;
+    margin: 4px 0 10px; letter-spacing: 1px; font-weight: bold;
+  }
+  .statline { display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 5px 0; color: #9db4d8; }
+  .statline .label { width: 34px; }
+  .statline .track { flex: 1; height: 10px; background: #05070f; border: 1px solid #2c3a63; }
+  .statline .fill { height: 100%; background: #00c2ff; }
+  .statline .val { width: 30px; text-align: right; color: #eaf0ff; }
+  .moves { margin-top: 10px; font-size: 11px; }
+  .moves .move { padding: 4px 0; border-top: 1px dashed #2c3a63; color: #cdd9f5; }
+  .moves .move b { color: #7fe7ff; }
+  .sprite-canvas-stat { display: block; margin: 0 auto 8px; image-rendering: pixelated; background: #05070f; border: 1px solid #2c3a63; }
+  .battlebox { background: #05070f; border: 2px solid #2c3a63; padding: 16px; min-height: 160px; margin-bottom: 16px; }
+  .battle-scene {
+    position: relative;
+    height: 300px;
+    border: 2px solid #2c3a63;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: linear-gradient(#4a6fa8 0%, #4a6fa8 55%, #3a7a3f 55%, #2f6633 100%);
+  }
+  .platform { position: absolute; border-radius: 50%; background: #234d26; opacity: 0.65; }
+  .platform.opp { width: 110px; height: 30px; top: 96px; right: 54px; }
+  .platform.player { width: 170px; height: 42px; bottom: 34px; left: 40px; }
+  .sprite-wrap { position: absolute; }
+  .sprite-wrap.opp { top: 26px; right: 66px; width: 96px; height: 96px; }
+  .sprite-wrap.player { bottom: 44px; left: 46px; width: 140px; height: 140px; }
+  .sprite-wrap canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+  .sprite-wrap.attack-anim { animation: bumpAnim 0.3s ease; }
+  .sprite-wrap.hit-anim { animation: hitAnim 0.3s ease; }
+  .sprite-wrap.faint-anim { animation: faintAnim 0.6s ease forwards; }
+  @keyframes bumpAnim {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.1); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes hitAnim {
+    0%, 100% { transform: translateX(0); filter: none; }
+    20% { transform: translateX(-6px); filter: brightness(2.4) saturate(0); }
+    40% { transform: translateX(6px); filter: brightness(2.4) saturate(0); }
+    60% { transform: translateX(-4px); filter: none; }
+    80% { transform: translateX(4px); }
+  }
+  @keyframes faintAnim {
+    to { transform: translateY(50px); opacity: 0; }
+  }
+  .hpbox {
+    position: absolute;
+    background: #f4f0e0;
+    border: 3px solid #2c3a63;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: inherit;
+    color: #1a1a1a;
+    min-width: 160px;
+  }
+  .hpbox.opp { top: 10px; left: 10px; }
+  .hpbox.player { bottom: 10px; right: 10px; }
+  .hpbox .row1 { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: bold; }
+  .hpbox .hpline { display: flex; align-items: center; gap: 4px; font-size: 9px; margin-top: 4px; }
+  .hpbox .track { flex: 1; height: 8px; background: #333; border: 1px solid #111; }
+  .hpbox .fill { height: 100%; background: #4ade80; transition: width 0.4s ease, background 0.4s ease; }
+  .hpbox .hptext { text-align: right; font-size: 9px; margin-top: 2px; }
+  .loglines { font-size: 12px; line-height: 1.9; min-height: 90px; }
+  .loglines .line { opacity: 0; animation: fadein 0.3s forwards; }
+  .loglines .line.event { color: #ffe66d; }
+  .loglines .line.crit { color: #ff4d6d; font-weight: bold; }
+  @keyframes fadein { to { opacity: 1; } }
+  .result { text-align: center; }
+  .result h2 { color: #ffe66d; letter-spacing: 3px; text-shadow: 2px 2px 0 #ff4d6d; }
+  canvas#card { border: 3px solid #4a5a8a; margin: 12px auto; display: block; max-width: 100%; height: auto; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  .avatar-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .avatar-preview { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #3a4a7a; object-fit: cover; display: none; background: #05070f; }
+  .avatar-hint { font-size: 10px; color: #6a7aa8; }
+  .cardaction-row { text-align: center; margin-top: 10px; }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(4,6,14,0.92);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 16px;
+  }
+  .overlay.hidden { display: none; }
+  .overlay-box {
+    background: #131a2e; border: 3px solid #4a5a8a; padding: 18px;
+    max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 2px;
+  }
+  .overlay-box h3 { margin: 0 0 12px; color: #ffe66d; font-size: 15px; letter-spacing: 2px; text-align: center; }
+  .overlay-close { text-align: right; }
+  .qr-target { background: #fff; padding: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; width: fit-content; }
+  .scan-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
+  .scan-tabs .chip { margin: 0; }
+  .scan-video-wrap { position: relative; width: 100%; max-width: 320px; margin: 0 auto 10px; border: 2px solid #3a4a7a; background: #000; }
+  .scan-video-wrap video { width: 100%; display: block; }
+  .scan-status { text-align: center; font-size: 12px; color: #9db4d8; min-height: 18px; margin-bottom: 8px; }
+  .manual-entry { display: flex; gap: 6px; margin-top: 10px; }
+  .manual-entry input { flex: 1; }
+
+  .profile-panel .row { display: flex; justify-content: space-between; font-size: 12px; margin: 6px 0; color: #cdd9f5; }
+  .profile-panel .xpbar { height: 10px; background: #05070f; border: 1px solid #2c3a63; margin: 4px 0 12px; }
+  .profile-panel .xpbar-fill { height: 100%; background: #7fe7ff; }
+  .titles-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .title-badge { font-size: 10px; padding: 4px 8px; background: #2c3a63; color: #ffe66d; border-radius: 2px; letter-spacing: 1px; }
+  .newtitle-banner { background: #2c3a63; border: 2px solid #ffe66d; padding: 10px; margin: 12px 0; font-size: 12px; text-align: center; color: #ffe66d; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="sr-only">つぶやきバトラー：あなたと相手のSNS投稿から自動で対戦キャラを生成し戦わせるバトルゲームのプロトタイプ</h1>
+  <h1 aria-hidden="true">つぶやき バトラー</h1>
+  <p class="sub">あなたの投稿をコピペするだけで、勝手にキャラ化して戦う</p>
+
+  <div id="screen-setup" class="panel">
+    <div class="fighters">
+      <div class="fcard">
+        <h3>YOU</h3>
+        <label>ニックネーム</label>
+        <input type="text" id="name-a" placeholder="例：佳" maxlength="12">
+        <label>直近の投稿を3〜5個コピペ（任意）</label>
+        <textarea id="text-a" placeholder="例：今日も定時で帰れなかった…&#10;推しの新曲が尊すぎて仕事にならない&#10;有給とったのに結局PC開いてる"></textarea>
+        <label>または属性を直接選ぶ</label>
+        <div class="chips" id="chips-a"></div>
+      </div>
+      <div class="fcard">
+        <h3>相手</h3>
+        <label>ニックネーム</label>
+        <input type="text" id="name-b" placeholder="例：友人A" maxlength="12">
+        <label>相手の投稿を3〜5個コピペ（任意）</label>
+        <textarea id="text-b" placeholder="友人のポストや特徴を入れてもOK"></textarea>
+        <label>または属性を直接選ぶ</label>
+        <div class="chips" id="chips-b"></div>
+        <label>X（Twitter）ID（@なし・任意/実験的機能）</label>
+        <input type="text" id="x-handle-b" placeholder="例：example_id">
+        <div class="avatar-row">
+          <img class="avatar-preview" id="avatar-b" alt="">
+          <span class="avatar-hint">※非公式取得のため表示できないことがあります</span>
+        </div>
+        <div style="text-align:right; margin-top:8px;">
+          <button class="small" id="btn-random-b" type="button">ランダム相手で埋める</button>
+          <button class="small" id="btn-scan-b" type="button">QR/バーコードで召喚</button>
+        </div>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="small" id="btn-achievements" type="button">実績を見る</button>
+    </div>
+    <div class="btnrow">
+      <button class="big" id="btn-start" type="button">バトル開始！</button>
+    </div>
+  </div>
+
+  <div id="screen-loading" class="panel hidden">
+    <div class="loading">
+      <div class="msg" id="loading-msg">NOW GENERATING...</div>
+      <div class="bar-outer"><div class="bar-inner" id="loading-bar"></div></div>
+      <div class="tip" id="loading-tip">投稿データを解析中...</div>
+    </div>
+  </div>
+
+  <div id="screen-stats" class="panel hidden">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="cardaction-row">
+      <button class="small" id="btn-qr-a" type="button">あなたのQRバトルカードを発行</button>
+    </div>
+    <div class="btnrow"><button class="big" id="btn-fight" type="button">たたかう！</button></div>
+  </div>
+
+  <div id="screen-battle" class="panel hidden">
+    <div class="battle-scene" id="battle-scene">
+      <div class="platform opp"></div>
+      <div class="platform player"></div>
+      <div class="hpbox opp" id="hpbox-b">
+        <div class="row1"><span id="name-disp-b"></span><span id="lv-disp-b"></span></div>
+        <div class="hpline"><span>HP</span><div class="track"><div class="fill" id="hpfill-b" style="width:100%"></div></div></div>
+        <div class="hptext" id="hptext-b"></div>
+      </div>
+      <div class="hpbox player" id="hpbox-a">
+        <div class="row1"><span id="name-disp-a"></span><span id="lv-disp-a"></span></div>
+        <div class="hpline"><span>HP</span><div class="track"><div class="fill" id="hpfill-a" style="width:100%"></div></div></div>
+        <div class="hptext" id="hptext-a"></div>
+      </div>
+      <div class="sprite-wrap opp" id="sprite-wrap-b"><canvas id="sprite-b" width="120" height="120"></canvas></div>
+      <div class="sprite-wrap player" id="sprite-wrap-a"><canvas id="sprite-a" width="160" height="160"></canvas></div>
+    </div>
+    <div class="battlebox"><div class="loglines" id="loglines"></div></div>
+  </div>
+
+  <div id="screen-result" class="panel hidden">
+    <div class="result">
+      <h2 id="result-title"></h2>
+      <div id="newtitle-banner-slot"></div>
+      <canvas id="card" width="900" height="520"></canvas>
+      <div>
+        <button class="small" id="btn-download" type="button">画像をダウンロード</button>
+        <button class="small" id="btn-share" type="button">Xでシェア</button>
+        <button class="small" id="btn-reset" type="button">もう一度あそぶ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-scan">
+  <div class="overlay-box">
+    <h3>QR / バーコード スキャナー</h3>
+    <div class="scan-tabs">
+      <div class="chip active" id="tab-qr" data-mode="qr">QRを読む</div>
+      <div class="chip" id="tab-barcode" data-mode="barcode">バーコードを読む</div>
+    </div>
+    <div class="scan-video-wrap">
+      <video id="scan-video" playsinline autoplay muted></video>
+    </div>
+    <div class="scan-status" id="scan-status">カメラ起動中...</div>
+    <div class="manual-entry">
+      <input type="text" id="manual-code" placeholder="読み取れない場合はここに直接入力">
+      <button class="small" id="btn-manual-submit" type="button">決定</button>
+    </div>
+    <div class="overlay-close">
+      <button class="small" id="btn-scan-close" type="button">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-qr">
+  <div class="overlay-box">
+    <h3 id="qr-issue-title">QRバトルカード</h3>
+    <div class="qr-target" id="qr-target"></div>
+    <div class="scan-status">このQRを相手に見せて「QR/バーコードで召喚」から読み取ってもらおう</div>
+    <div class="overlay-close">
+      <button class="small" id="btn-qr-close" type="button">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay-profile">
+  <div class="overlay-box profile-panel">
+    <h3>実績 / 自己満レベル</h3>
+    <div class="row"><span>自己満Lv</span><span id="prof-level"></span></div>
+    <div class="xpbar"><div class="xpbar-fill" id="prof-xpfill" style="width:0%"></div></div>
+    <div class="row"><span>総対戦数</span><span id="prof-battles"></span></div>
+    <div class="row"><span>勝利数</span><span id="prof-wins"></span></div>
+    <div class="row"><span>現在の連勝</span><span id="prof-streak"></span></div>
+    <div class="row"><span>最高連勝</span><span id="prof-beststreak"></span></div>
+    <div class="titles-list" id="prof-titles"></div>
+    <div class="overlay-close" style="margin-top:14px;">
+      <button class="small" id="btn-profile-reset" type="button">記録をリセット</button>
+      <button class="small" id="btn-profile-close" type="button">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TYPES = [
+    { key: "shachiku", label: "社畜", color: "#8899aa", keywords: ["会議","残業","上司","有給","終電","出社","納期","部長","休みたい"] },
+    { key: "indoor",   label: "インドア派", color: "#5dcaa5", keywords: ["家から出たくない","引きこもり","家でゴロゴロ","布団","ソシャゲ","家が一番"] },
+    { key: "youkya",   label: "陽キャ", color: "#ef9f27", keywords: ["飲み会","パリピ","フェス","バーベキュー","ウェイ","合コン","陽キャ"] },
+    { key: "otaku",    label: "限界オタク", color: "#7f77dd", keywords: ["尊い","供給","円盤","布教","限界","現場","担当","沼"] },
+    { key: "aori",     label: "煽り魔", color: "#e24b4a", keywords: ["ww","知らんけど","論破","マウント","はい論破","釣り","炎上","それな"] },
+    { key: "oshikatsu",label: "推し活勢", color: "#d4537e", keywords: ["推し活","グッズ","チェキ","参戦","現場","尊い"] },
+    { key: "ishiki",   label: "意識高い系", color: "#639922", keywords: ["自己投資","朝活","インプット","アウトプット","ビジネス書","副業","起業","人脈"] },
+    { key: "rouhi",    label: "浪費家", color: "#d85a30", keywords: ["爆買い","課金","散財","給料日","セール","ポチった","買っちゃった"] }
+  ];
+
+  var MOVE_TEMPLATES = ["○○の逆襲","全力○○","秘技・○○","○○ビーム","禁断の○○","深夜の○○","○○チャージ","本気の○○","渾身の○○","○○オブザイヤー"];
+  var MOVE_NOUNS = {
+    shachiku: ["残業","有給消化","土下座","終電ダッシュ","定時退社"],
+    indoor:   ["布団ダイブ","コタツ","引きこもり","ゴロ寝","エアコン全開"],
+    youkya:   ["ウェイウェイ","テンションMAX","ノリ","陽の力","乾杯コール"],
+    otaku:    ["尊み","供給過多","布教活動","推し語り","円盤リピート"],
+    aori:     ["論破","煽りリプ","煽りスクショ","マウント","知らんけど宣言"],
+    oshikatsu:["チェキ会","現場乱入","サイリウム乱舞","担当報告","物販列"],
+    ishiki:   ["朝活マウント","人脈自慢","自己啓発本","副業自慢","名刺配り"],
+    rouhi:    ["ポチり","爆買い","課金","セール突撃","後先考えない散財"]
+  };
+
+  var HAPPENINGS = [
+    { text: "{n}は推しの配信が始まったため戦線離脱した！", effect: "skip" },
+    { text: "{n}は急に電話がかかってきて動けない！", effect: "skip" },
+    { text: "{n}はSNSの通知が気になって集中できない！", effect: "skip" },
+    { text: "{n}はうっかり寝落ちしてしまった…", effect: "skip" },
+    { text: "{n}は差し入れのタピオカに気を取られた！", effect: "skip" },
+    { text: "{n}はコンビニに寄り道してしまった！", effect: "skip" },
+    { text: "{n}は謎のやる気に目覚めた！ 次の一撃が強化される！", effect: "buff" },
+    { text: "{n}は謎の勇気を振り絞った！ 会心の一撃！", effect: "crit" },
+    { text: "{n}は不謹慎な技を繰り出そうとしたが自主規制した！", effect: "skip" },
+    { text: "{n}は限界を超えて覚醒した！ 次の一撃が強化される！", effect: "buff" }
+  ];
+
+  function typeByKey(key){
+    for (var i=0;i<TYPES.length;i++){ if (TYPES[i].key===key) return TYPES[i]; }
+    return TYPES[0];
+  }
+
+  function hashString(str){
+    var h = 2166136261;
+    for (var i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function mulberry32(seed){
+    var a = seed;
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function detectType(text){
+    if (!text) return null;
+    var scores = {};
+    TYPES.forEach(function(t){ scores[t.key] = 0; });
+    TYPES.forEach(function(t){
+      t.keywords.forEach(function(kw){
+        if (text.indexOf(kw) !== -1) scores[t.key] += 1;
+      });
+    });
+    var best = null, bestScore = 0;
+    TYPES.forEach(function(t){
+      if (scores[t.key] > bestScore){ bestScore = scores[t.key]; best = t.key; }
+    });
+    return best;
+  }
+
+  function pickUnique(rng, arr, n){
+    var pool = arr.slice();
+    var out = [];
+    while (out.length < n && pool.length > 0){
+      var idx = Math.floor(rng() * pool.length);
+      out.push(pool.splice(idx,1)[0]);
+    }
+    return out;
+  }
+
+  function generateMoves(rng, typeKey){
+    var templates = pickUnique(rng, MOVE_TEMPLATES, 4);
+    var nouns = MOVE_NOUNS[typeKey];
+    var moves = [];
+    for (var i=0;i<4;i++){
+      var noun = nouns[Math.floor(rng()*nouns.length)];
+      var name = templates[i].replace("○○", noun);
+      var power = 35 + Math.floor(rng()*56);
+      moves.push({ name: name, power: power });
+    }
+    return moves;
+  }
+
+  function generateFighter(name, text, forcedTypeKey){
+    var cleanName = (name && name.trim()) ? name.trim() : "名無しさん";
+    var typeKey = forcedTypeKey || detectType(text || "");
+    var seedBase = cleanName + "|" + (text||"") + "|" + (typeKey||"");
+    var seed = hashString(seedBase || (Math.random()+""));
+    if (!typeKey){
+      var rngType = mulberry32(seed);
+      typeKey = TYPES[Math.floor(rngType()*TYPES.length)].key;
+      seed = hashString(seedBase + typeKey);
+    }
+    var rng = mulberry32(seed);
+    var type = typeByKey(typeKey);
+    var hp = 70 + Math.floor(rng()*61);
+    var atk = 40 + Math.floor(rng()*81);
+    var def = 40 + Math.floor(rng()*81);
+    var spd = 40 + Math.floor(rng()*81);
+    var moves = generateMoves(rng, typeKey);
+    return {
+      name: cleanName,
+      typeKey: typeKey,
+      type: type,
+      hp: hp, maxHp: hp, atk: atk, def: def, spd: spd,
+      moves: moves,
+      currentHp: hp
+    };
+  }
+
+  function typeEffectiveness(attackerKey, defenderKey){
+    var ai = -1, di = -1;
+    for (var i=0;i<TYPES.length;i++){
+      if (TYPES[i].key===attackerKey) ai = i;
+      if (TYPES[i].key===defenderKey) di = i;
+    }
+    var diff = ((di - ai) % TYPES.length + TYPES.length) % TYPES.length;
+    if (diff===1 || diff===2) return { mult: 1.6, label: "抜群だ！" };
+    if (diff===6 || diff===7) return { mult: 0.6, label: "いまひとつのようだ…" };
+    return { mult: 1.0, label: null };
+  }
+
+  var ACCESSORY = {
+    shachiku:  [[4,6,"#d0342c"],[4,7,"#d0342c"],[3,6,"#e8e8e8"],[5,6,"#e8e8e8"]],
+    indoor:    [[1,7,"#8fd6ff"],[2,7,"#8fd6ff"],[6,7,"#8fd6ff"],[7,7,"#8fd6ff"]],
+    youkya:    [[3,2,"#151515"],[4,2,"#151515"],[5,2,"#151515"],[2,2,"#151515"],[6,2,"#151515"]],
+    otaku:     [[3,0,"#ffe66d"],[5,0,"#ffe66d"],[3,-1,"#ffe66d"],[5,-1,"#ffe66d"]],
+    aori:      [[3,1,"#e24b4a"],[5,1,"#e24b4a"],[2,1,"#e24b4a"],[6,1,"#e24b4a"]],
+    oshikatsu: [[4,0,"#ff8fc7"],[3,0,"#ff8fc7"],[5,0,"#ff8fc7"]],
+    ishiki:    [[2,2,"#222222"],[6,2,"#222222"],[2,3,"#222222"],[6,3,"#222222"]],
+    rouhi:     [[4,5,"#ffd23f"],[4,4,"#ffd23f"]]
+  };
+
+  function shadeColor(hex, percent){
+    var num = parseInt(hex.replace("#",""), 16);
+    var r = (num >> 16) + percent;
+    var g = ((num >> 8) & 0x00FF) + percent;
+    var b = (num & 0x0000FF) + percent;
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+    return "#" + (0x1000000 + r*0x10000 + g*0x100 + b).toString(16).slice(1);
+  }
+
+  var SPRITE_W = 9, SPRITE_H = 8;
+
+  function generateSpriteGrid(fighter){
+    var seedStr = fighter.name + "|" + fighter.typeKey + "|sprite|" + fighter.hp + "-" + fighter.atk + "-" + fighter.def + "-" + fighter.spd;
+    var rng = mulberry32(hashString(seedStr));
+    var W = SPRITE_W, H = SPRITE_H;
+    var grid = [];
+    for (var y=0;y<H;y++){ grid.push(new Array(W).fill(0)); }
+    var half = Math.ceil(W/2);
+    for (var y2=0;y2<H;y2++){
+      for (var x=0;x<half;x++){
+        var dx = x - (half-1);
+        var dy = y2 - (H/2 - 0.5);
+        var dist = Math.sqrt(dx*dx*1.3 + dy*dy);
+        var maxDist = Math.sqrt((half-1)*(half-1)*1.3 + (H/2)*(H/2));
+        var prob = 0.92 - (dist/maxDist)*0.75;
+        var filled = rng() < prob ? 1 : 0;
+        grid[y2][x] = filled;
+        grid[y2][W-1-x] = filled;
+      }
+    }
+    var count = 0;
+    grid.forEach(function(row){ row.forEach(function(c){ if (c) count++; }); });
+    if (count < W*H*0.25){
+      for (var y3=2;y3<=5;y3++){ for (var x3=3;x3<=5;x3++){ grid[y3][x3]=1; } }
+    }
+    return grid;
+  }
+
+  function drawEyePixel(ctx, col, row, cell, offsetX, offsetY){
+    if (row < 0) return;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(offsetX+col*cell, offsetY+row*cell, cell, cell);
+    ctx.fillStyle = "#111111";
+    ctx.fillRect(offsetX+col*cell+Math.floor(cell*0.3), offsetY+row*cell+Math.floor(cell*0.3), Math.ceil(cell*0.4), Math.ceil(cell*0.4));
+  }
+
+  function drawSpriteToCanvas(canvas, fighter, mirror, badgeTier){
+    if (!canvas) return;
+    var grid = generateSpriteGrid(fighter);
+    var W = SPRITE_W, H = SPRITE_H;
+    var cell = Math.floor(canvas.width / W);
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var offsetX = Math.floor((canvas.width - cell*W)/2);
+    var offsetY = canvas.height - cell*H - Math.floor(cell*0.4);
+    var bodyColor = fighter.type.color;
+    var outline = shadeColor(bodyColor, -70);
+    for (var y=0;y<H;y++){
+      for (var x=0;x<W;x++){
+        if (!grid[y][x]) continue;
+        var dx = mirror ? (W-1-x) : x;
+        var hasUp = y>0 && grid[y-1][x];
+        var hasDown = y<H-1 && grid[y+1][x];
+        var hasLeft = x>0 && grid[y][x-1];
+        var hasRight = x<W-1 && grid[y][x+1];
+        ctx.fillStyle = bodyColor;
+        ctx.fillRect(offsetX+dx*cell, offsetY+y*cell, cell, cell);
+        ctx.fillStyle = outline;
+        if (!hasUp) ctx.fillRect(offsetX+dx*cell, offsetY+y*cell, cell, Math.max(1,Math.floor(cell*0.15)));
+        if (!hasDown) ctx.fillRect(offsetX+dx*cell, offsetY+(y+1)*cell-Math.max(1,Math.floor(cell*0.15)), cell, Math.max(1,Math.floor(cell*0.15)));
+        if (!hasLeft) ctx.fillRect(offsetX+dx*cell, offsetY+y*cell, Math.max(1,Math.floor(cell*0.15)), cell);
+        if (!hasRight) ctx.fillRect(offsetX+(dx+1)*cell-Math.max(1,Math.floor(cell*0.15)), offsetY+y*cell, Math.max(1,Math.floor(cell*0.15)), cell);
+      }
+    }
+    var eyeRow = 2, eyeColL = 3, eyeColR = 5;
+    drawEyePixel(ctx, mirror ? W-1-eyeColL : eyeColL, eyeRow, cell, offsetX, offsetY);
+    drawEyePixel(ctx, mirror ? W-1-eyeColR : eyeColR, eyeRow, cell, offsetX, offsetY);
+    var acc = ACCESSORY[fighter.typeKey] || [];
+    acc.forEach(function(p){
+      var ax = mirror ? (W-1-p[0]) : p[0];
+      ctx.fillStyle = p[2];
+      ctx.fillRect(offsetX+ax*cell, offsetY+p[1]*cell, cell, cell);
+    });
+    var tier = badgeTier || 0;
+    if (tier > 0){
+      var badgeSize = Math.max(2, Math.min(Math.floor(cell*0.55), offsetY));
+      var badgeY = Math.max(0, offsetY - badgeSize - 1);
+      for (var bi=0; bi<Math.min(tier,3); bi++){
+        var bx = mirror ? (W-2-bi) : (1+bi);
+        ctx.fillStyle = "#ffe66d";
+        ctx.fillRect(offsetX+bx*cell + Math.floor((cell-badgeSize)/2), badgeY, badgeSize, badgeSize);
+      }
+    }
+  }
+
+  function calcLevel(f){
+    return Math.max(5, Math.min(99, Math.round((f.hp+f.atk+f.def+f.spd)/8)));
+  }
+
+  var QR_PREFIX = "TB1:";
+
+  function fighterToPayload(f){
+    var data = { n: f.name, tk: f.typeKey, hp: f.hp, atk: f.atk, def: f.def, spd: f.spd,
+      mv: f.moves.map(function(m){ return [m.name, m.power]; }) };
+    return QR_PREFIX + JSON.stringify(data);
+  }
+
+  function payloadToFighter(str){
+    if (typeof str !== "string" || str.indexOf(QR_PREFIX) !== 0) return null;
+    try {
+      var obj = JSON.parse(str.slice(QR_PREFIX.length));
+      if (!obj || !obj.n || !obj.tk) return null;
+      var moves = (obj.mv || []).map(function(pair){ return { name: pair[0], power: pair[1] }; });
+      while (moves.length < 4) moves.push({ name: "たいあたり", power: 40 });
+      var hp = Math.max(1, obj.hp|0);
+      return {
+        name: String(obj.n).slice(0,24),
+        typeKey: obj.tk,
+        type: typeByKey(obj.tk),
+        hp: hp, maxHp: hp, atk: obj.atk|0, def: obj.def|0, spd: obj.spd|0,
+        moves: moves.slice(0,4),
+        currentHp: hp
+      };
+    } catch (e){
+      return null;
+    }
+  }
+
+  function fighterFromCode(code){
+    var label = "コード:" + code;
+    return generateFighter(label, String(code), null);
+  }
+
+  var PROFILE_KEY = "tsubuyakiBattlerProfile_v1";
+
+  function loadProfile(){
+    try {
+      var raw = localStorage.getItem(PROFILE_KEY);
+      if (raw){
+        var p = JSON.parse(raw);
+        if (p && typeof p.xp === "number") return p;
+      }
+    } catch (e){}
+    return { battles: 0, wins: 0, streak: 0, bestStreak: 0, xp: 0, titles: [] };
+  }
+
+  function saveProfile(p){
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e){}
+  }
+
+  function xpToLevel(xp){
+    return Math.floor(xp / 100) + 1;
+  }
+
+  function computeBadgeTier(){
+    return Math.min(3, Math.floor(xpToLevel(loadProfile().xp) / 5));
+  }
+
+  var TITLE_MILESTONES = [
+    { id: "first_win", label: "はじめての勝利", cond: function(p){ return p.wins >= 1; } },
+    { id: "win5", label: "駆け出しバトラー", cond: function(p){ return p.wins >= 5; } },
+    { id: "win20", label: "猛者", cond: function(p){ return p.wins >= 20; } },
+    { id: "streak3", label: "3連勝ブレイカー", cond: function(p){ return p.bestStreak >= 3; } },
+    { id: "streak5", label: "連勝街道まっしぐら", cond: function(p){ return p.bestStreak >= 5; } },
+    { id: "battles10", label: "戦い慣れしてきた", cond: function(p){ return p.battles >= 10; } },
+    { id: "lv10", label: "自己満Lv10到達", cond: function(p){ return xpToLevel(p.xp) >= 10; } }
+  ];
+
+  function titleLabel(id){
+    for (var i=0;i<TITLE_MILESTONES.length;i++){ if (TITLE_MILESTONES[i].id === id) return TITLE_MILESTONES[i].label; }
+    return id;
+  }
+
+  function applyBattleResultToProfile(didWin){
+    var p = loadProfile();
+    p.battles += 1;
+    if (didWin){
+      p.wins += 1;
+      p.streak += 1;
+      p.xp += 30;
+      if (p.streak > p.bestStreak) p.bestStreak = p.streak;
+    } else {
+      p.streak = 0;
+      p.xp += 8;
+    }
+    var newTitles = [];
+    TITLE_MILESTONES.forEach(function(t){
+      if (t.cond(p) && p.titles.indexOf(t.id) === -1){
+        p.titles.push(t.id);
+        newTitles.push(t.label);
+      }
+    });
+    saveProfile(p);
+    return { profile: p, newTitles: newTitles };
+  }
+
+  function simulateBattle(a, b){
+    var log = [];
+    var buffA = 1, buffB = 1;
+    var finishingMove = null;
+    var turn = 0;
+    var maxTurns = 30;
+
+    function snap(){ return { hpA: a.currentHp, hpB: b.currentHp }; }
+
+    function attack(att, def, buffRef, actorSide, targetSide){
+      var move = att.moves[Math.floor(Math.random()*att.moves.length)];
+      var eff = typeEffectiveness(att.typeKey, def.typeKey);
+      var variance = 0.85 + Math.random()*0.3;
+      var buffMult = buffRef.v;
+      buffRef.v = 1;
+      var s0 = snap();
+      log.push({ text: att.name + "の" + move.name + "！", cls: "", kind: "move", actor: actorSide, target: targetSide, hpA: s0.hpA, hpB: s0.hpB });
+      if (eff.label) log.push({ text: eff.label, cls: "event", kind: "event", actor: actorSide, target: targetSide, hpA: s0.hpA, hpB: s0.hpB });
+      var dmg = Math.max(1, Math.round((move.power/3) * (att.atk/Math.max(20,def.def)) * eff.mult * variance * buffMult));
+      def.currentHp = Math.max(0, def.currentHp - dmg);
+      var s1 = snap();
+      if (buffMult > 1) log.push({ text: "会心の一撃！ " + dmg + "ダメージ！", cls: "crit", kind: "hit", actor: actorSide, target: targetSide, dmg: dmg, crit: true, hpA: s1.hpA, hpB: s1.hpB });
+      else log.push({ text: def.name + "に" + dmg + "ダメージ！", cls: "", kind: "hit", actor: actorSide, target: targetSide, dmg: dmg, crit: false, hpA: s1.hpA, hpB: s1.hpB });
+      finishingMove = move.name;
+      return def.currentHp <= 0;
+    }
+
+    while (a.currentHp > 0 && b.currentHp > 0 && turn < maxTurns){
+      turn++;
+      var order = (a.spd + Math.random()*20) >= (b.spd + Math.random()*20) ? [ ["A","B"] ] : [ ["B","A"] ];
+      var seq = order[0];
+      for (var s=0; s<seq.length; s++){
+        var actorKey = seq[s];
+        var targetKey = actorKey === "A" ? "B" : "A";
+        var att = actorKey==="A" ? a : b;
+        var def = actorKey==="A" ? b : a;
+        var buffRef = actorKey==="A" ? {v:buffA} : {v:buffB};
+        if (att.currentHp <= 0 || def.currentHp <= 0) continue;
+
+        if (Math.random() < 0.16){
+          var h = HAPPENINGS[Math.floor(Math.random()*HAPPENINGS.length)];
+          var msg = h.text.replace("{n}", att.name);
+          var se = snap();
+          log.push({ text: msg, cls: "event", kind: "event", actor: actorKey, target: targetKey, hpA: se.hpA, hpB: se.hpB });
+          if (h.effect === "skip"){
+            continue;
+          } else if (h.effect === "buff"){
+            if (actorKey==="A") buffA = 1.7; else buffB = 1.7;
+            continue;
+          } else if (h.effect === "crit"){
+            if (actorKey==="A") buffA = 2.0; else buffB = 2.0;
+          }
+        }
+
+        var bref = { v: actorKey==="A" ? buffA : buffB };
+        var fainted = attack(att, def, bref, actorKey, targetKey);
+        if (actorKey==="A") buffA = bref.v; else buffB = bref.v;
+        if (fainted) break;
+      }
+    }
+
+    var winner, loser, loserSide;
+    if (a.currentHp <= 0 && b.currentHp > 0){ winner = b; loser = a; loserSide = "A"; }
+    else if (b.currentHp <= 0 && a.currentHp > 0){ winner = a; loser = b; loserSide = "B"; }
+    else if (a.currentHp >= b.currentHp){ winner = a; loser = b; loserSide = "B"; }
+    else { winner = b; loser = a; loserSide = "A"; }
+
+    var sf = snap();
+    log.push({ text: loser.name + "は倒れた！ " + winner.name + "の勝利！", cls: "crit", kind: "faint", actor: loserSide, hpA: sf.hpA, hpB: sf.hpB });
+
+    return { log: log, winner: winner, loser: loser, finishingMove: finishingMove };
+  }
+
+  var chipsA, chipsB;
+  function buildChips(container, hiddenInputGetter, onSelect){
+    container.innerHTML = "";
+    var selected = null;
+    TYPES.forEach(function(t){
+      var el = document.createElement("div");
+      el.className = "chip";
+      el.textContent = t.label;
+      el.setAttribute("data-key", t.key);
+      el.addEventListener("click", function(){
+        var key = el.getAttribute("data-key");
+        if (selected === key){
+          selected = null;
+        } else {
+          selected = key;
+        }
+        Array.prototype.forEach.call(container.children, function(c){
+          c.classList.toggle("active", c.getAttribute("data-key")===selected);
+        });
+        onSelect(selected);
+      });
+      container.appendChild(el);
+    });
+  }
+
+  var forcedTypeA = null, forcedTypeB = null;
+  var elChipsA = document.getElementById("chips-a");
+  var elChipsB = document.getElementById("chips-b");
+  buildChips(elChipsA, null, function(key){ forcedTypeA = key; });
+  buildChips(elChipsB, null, function(key){ forcedTypeB = key; });
+
+  document.getElementById("btn-random-b").addEventListener("click", function(){
+    document.getElementById("name-b").value = ["ライバル","謎の刺客","隣の席の人","元同期","フォロワー"][Math.floor(Math.random()*5)];
+    document.getElementById("text-b").value = "";
+    forcedTypeB = TYPES[Math.floor(Math.random()*TYPES.length)].key;
+    Array.prototype.forEach.call(elChipsB.children, function(c){
+      c.classList.toggle("active", c.getAttribute("data-key")===forcedTypeB);
+    });
+  });
+
+  function showScreen(id){
+    ["screen-setup","screen-loading","screen-stats","screen-battle","screen-result"].forEach(function(s){
+      document.getElementById(s).classList.toggle("hidden", s !== id);
+    });
+  }
+
+  var fighterA, fighterB, battleResult;
+  var scannedFighterB = null;
+
+  document.getElementById("name-b").addEventListener("input", function(){ scannedFighterB = null; });
+  document.getElementById("text-b").addEventListener("input", function(){ scannedFighterB = null; });
+
+  document.getElementById("btn-start").addEventListener("click", function(){
+    var nameA = document.getElementById("name-a").value;
+    var textA = document.getElementById("text-a").value;
+    var nameB = document.getElementById("name-b").value;
+    var textB = document.getElementById("text-b").value;
+
+    fighterA = generateFighter(nameA, textA, forcedTypeA);
+    fighterB = scannedFighterB || generateFighter(nameB, textB, forcedTypeB);
+
+    showScreen("screen-loading");
+    var bar = document.getElementById("loading-bar");
+    var tip = document.getElementById("loading-tip");
+    var tips = ["投稿データを解析中...","属性を判定中...","ステータスを算出中...","固有技を生成中...","対戦カードを準備中..."];
+    var pct = 0;
+    var tipIdx = 0;
+    tip.textContent = tips[0];
+    var iv = setInterval(function(){
+      pct += 8 + Math.random()*10;
+      if (pct > 100) pct = 100;
+      bar.style.width = pct + "%";
+      var newTipIdx = Math.min(tips.length-1, Math.floor((pct/100) * tips.length));
+      if (newTipIdx !== tipIdx){ tipIdx = newTipIdx; tip.textContent = tips[tipIdx]; }
+      if (pct >= 100){
+        clearInterval(iv);
+        setTimeout(function(){ renderStats(); showScreen("screen-stats"); }, 250);
+      }
+    }, 140);
+  });
+
+  function statBar(val){
+    var pct = Math.min(100, Math.round((val/140)*100));
+    return '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div>';
+  }
+
+  function renderFighterCard(f, idSuffix){
+    var html = '<div class="statcard">';
+    html += '<canvas class="sprite-canvas-stat" id="sprite-stat-' + idSuffix + '" width="90" height="90"></canvas>';
+    html += '<div class="name">' + escapeHtml(f.name) + '</div>';
+    html += '<div class="typebadge" style="background:' + f.type.color + '22; color:' + f.type.color + '; border:1px solid ' + f.type.color + '">' + f.type.label + '</div>';
+    html += '<div class="statline"><span class="label">HP</span>' + statBar(f.hp) + '<span class="val">' + f.hp + '</span></div>';
+    html += '<div class="statline"><span class="label">攻撃</span>' + statBar(f.atk) + '<span class="val">' + f.atk + '</span></div>';
+    html += '<div class="statline"><span class="label">防御</span>' + statBar(f.def) + '<span class="val">' + f.def + '</span></div>';
+    html += '<div class="statline"><span class="label">素早</span>' + statBar(f.spd) + '<span class="val">' + f.spd + '</span></div>';
+    html += '<div class="moves">';
+    f.moves.forEach(function(m){
+      html += '<div class="move"><b>' + escapeHtml(m.name) + '</b>　威力' + m.power + '</div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  function renderStats(){
+    document.getElementById("stats-grid").innerHTML =
+      renderFighterCard(fighterA, "a") + renderFighterCard(fighterB, "b");
+    drawSpriteToCanvas(document.getElementById("sprite-stat-a"), fighterA, false, computeBadgeTier());
+    drawSpriteToCanvas(document.getElementById("sprite-stat-b"), fighterB, true, 0);
+  }
+
+  document.getElementById("btn-fight").addEventListener("click", function(){
+    fighterA.currentHp = fighterA.hp;
+    fighterB.currentHp = fighterB.hp;
+    battleResult = simulateBattle(fighterA, fighterB);
+    showScreen("screen-battle");
+    setupBattleScene();
+    playLog(battleResult.log, 0);
+  });
+
+  function setupBattleScene(){
+    document.getElementById("name-disp-a").textContent = fighterA.name;
+    document.getElementById("name-disp-b").textContent = fighterB.name;
+    document.getElementById("lv-disp-a").textContent = "Lv." + calcLevel(fighterA);
+    document.getElementById("lv-disp-b").textContent = "Lv." + calcLevel(fighterB);
+    updateHpBox("a", fighterA.hp, fighterA.hp);
+    updateHpBox("b", fighterB.hp, fighterB.hp);
+    drawSpriteToCanvas(document.getElementById("sprite-a"), fighterA, false, computeBadgeTier());
+    drawSpriteToCanvas(document.getElementById("sprite-b"), fighterB, true, 0);
+    document.getElementById("sprite-wrap-a").classList.remove("faint-anim","attack-anim","hit-anim");
+    document.getElementById("sprite-wrap-b").classList.remove("faint-anim","attack-anim","hit-anim");
+    document.getElementById("sprite-wrap-a").style.opacity = 1;
+    document.getElementById("sprite-wrap-b").style.opacity = 1;
+    document.getElementById("loglines").innerHTML = "";
+  }
+
+  function updateHpBox(side, hp, maxHp){
+    var pct = Math.max(0, Math.round((hp/maxHp)*100));
+    var fill = document.getElementById("hpfill-" + side.toLowerCase());
+    var text = document.getElementById("hptext-" + side.toLowerCase());
+    if (fill){
+      fill.style.width = pct + "%";
+      fill.style.background = pct > 50 ? "#4ade80" : (pct > 20 ? "#facc15" : "#ef4444");
+    }
+    if (text) text.textContent = hp + "/" + maxHp;
+  }
+
+  function triggerAnim(side, cls, permanent){
+    var el = document.getElementById("sprite-wrap-" + side.toLowerCase());
+    if (!el) return;
+    el.classList.remove("attack-anim","hit-anim");
+    void el.offsetWidth;
+    el.classList.add(cls);
+    if (!permanent){
+      setTimeout(function(){ el.classList.remove(cls); }, 320);
+    }
+  }
+
+  function playLog(log, i){
+    if (i >= log.length){
+      setTimeout(function(){ showResult(); }, 500);
+      return;
+    }
+    var entry = log[i];
+    var el = document.getElementById("loglines");
+    var line = document.createElement("div");
+    line.className = "line" + (entry.cls ? " " + entry.cls : "");
+    line.textContent = entry.text;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+
+    if (typeof entry.hpA === "number") updateHpBox("a", entry.hpA, fighterA.hp);
+    if (typeof entry.hpB === "number") updateHpBox("b", entry.hpB, fighterB.hp);
+
+    if (entry.kind === "move" && entry.actor){
+      triggerAnim(entry.actor, "attack-anim", false);
+    } else if (entry.kind === "hit" && entry.target){
+      triggerAnim(entry.target, "hit-anim", false);
+    } else if (entry.kind === "faint" && entry.actor){
+      triggerAnim(entry.actor, "faint-anim", true);
+    }
+
+    setTimeout(function(){ playLog(log, i+1); }, 550);
+  }
+
+  function showResult(){
+    showScreen("screen-result");
+    document.getElementById("result-title").textContent = battleResult.winner.name + " の勝利！";
+    var didWin = battleResult.winner === fighterA;
+    var progress = applyBattleResultToProfile(didWin);
+    var bannerSlot = document.getElementById("newtitle-banner-slot");
+    bannerSlot.innerHTML = "";
+    if (progress.newTitles.length > 0){
+      var banner = document.createElement("div");
+      banner.className = "newtitle-banner";
+      banner.textContent = "称号解除！「" + progress.newTitles.join("」「") + "」";
+      bannerSlot.appendChild(banner);
+    }
+    drawCard();
+  }
+
+  function drawCard(){
+    var canvas = document.getElementById("card");
+    var ctx = canvas.getContext("2d");
+    var w = canvas.width, h = canvas.height;
+    ctx.fillStyle = "#0b0e1a";
+    ctx.fillRect(0,0,w,h);
+
+    ctx.strokeStyle = "#ffe66d";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(16,16,w-32,h-32);
+    ctx.strokeStyle = "#4a5a8a";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(30,30,w-60,h-60);
+
+    for (var x=30; x<w-30; x+=14){
+      ctx.fillStyle = (Math.floor(x/14)%2===0) ? "#ff4d6d" : "#00c2ff";
+      ctx.fillRect(x,30,7,4);
+      ctx.fillRect(x,h-34,7,4);
+    }
+
+    ctx.fillStyle = "#7fe7ff";
+    ctx.font = "bold 20px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("つぶやきバトラー - BATTLE RESULT", w/2, 68);
+
+    ctx.fillStyle = "#ffe66d";
+    ctx.font = "bold 44px monospace";
+    ctx.fillText(battleResult.winner.name + " の勝利！", w/2, 130);
+
+    var winner = battleResult.winner, loser = battleResult.loser;
+    ctx.font = "bold 24px monospace";
+    ctx.fillStyle = winner.type.color;
+    ctx.fillText("[" + winner.type.label + "]", w*0.27, 180);
+    ctx.fillStyle = "#e24b4a";
+    ctx.fillText("[" + loser.type.label + "]", w*0.73, 180);
+
+    ctx.font = "bold 30px monospace";
+    ctx.fillStyle = "#eaf0ff";
+    ctx.fillText(winner.name, w*0.27, 220);
+    ctx.fillStyle = "#9db4d8";
+    ctx.fillText(loser.name, w*0.73, 220);
+
+    ctx.font = "bold 40px monospace";
+    ctx.fillStyle = "#ff4d6d";
+    ctx.fillText("VS", w/2, 215);
+
+    var winnerIsPlayer = winner === fighterA;
+    var badgeTier = computeBadgeTier();
+    var offA = document.createElement("canvas");
+    offA.width = 140; offA.height = 140;
+    drawSpriteToCanvas(offA, winner, false, winnerIsPlayer ? badgeTier : 0);
+    var offB = document.createElement("canvas");
+    offB.width = 140; offB.height = 140;
+    drawSpriteToCanvas(offB, loser, true, winnerIsPlayer ? 0 : badgeTier);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(offA, w*0.27-70, 240, 140, 140);
+    ctx.drawImage(offB, w*0.73-70, 240, 140, 140);
+
+    ctx.font = "18px monospace";
+    ctx.fillStyle = "#cdd9f5";
+    ctx.fillText("決まり技：「" + (battleResult.finishingMove || "不明の一撃") + "」", w/2, 410);
+
+    ctx.font = "14px monospace";
+    ctx.fillStyle = "#6a7aa8";
+    ctx.fillText("あなたのSNSも自動でキャラ化されます", w/2, 450);
+
+    ctx.font = "bold 16px monospace";
+    ctx.fillStyle = "#00c2ff";
+    ctx.fillText("#つぶやきバトラー", w/2, 480);
+  }
+
+  document.getElementById("btn-download").addEventListener("click", function(){
+    var canvas = document.getElementById("card");
+    var link = document.createElement("a");
+    link.download = "tsubuyaki-battle-result.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+
+  document.getElementById("btn-share").addEventListener("click", function(){
+    var text = battleResult.winner.name + "が" + battleResult.loser.name + "に「" +
+      (battleResult.finishingMove || "謎の一撃") + "」で勝利した。 #つぶやきバトラー";
+    var url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", function(){
+    document.getElementById("loglines").innerHTML = "";
+    showScreen("screen-setup");
+  });
+
+  document.getElementById("x-handle-b").addEventListener("input", function(){
+    var handle = this.value.trim().replace(/^@/, "");
+    var img = document.getElementById("avatar-b");
+    img.onerror = function(){ img.style.display = "none"; };
+    img.onload = function(){ img.style.display = "inline-block"; };
+    if (!handle){
+      img.style.display = "none";
+      img.removeAttribute("src");
+      return;
+    }
+    img.src = "https://unavatar.io/x/" + encodeURIComponent(handle) + "?fallback=false";
+  });
+
+  document.getElementById("btn-qr-a").addEventListener("click", function(){
+    if (!fighterA) return;
+    var target = document.getElementById("qr-target");
+    target.innerHTML = "";
+    document.getElementById("qr-issue-title").textContent = fighterA.name + " のQRバトルカード";
+    if (typeof QRCode === "undefined"){
+      target.innerHTML = '<span style="color:#e24b4a; font-size:12px;">QRライブラリを読み込めませんでした（オフライン環境の可能性）。オンラインで開き直してください。</span>';
+    } else {
+      try {
+        new QRCode(target, { text: fighterToPayload(fighterA), width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+      } catch (e){
+        target.innerHTML = '<span style="color:#e24b4a; font-size:12px;">QR生成に失敗しました。</span>';
+      }
+    }
+    document.getElementById("overlay-qr").classList.remove("hidden");
+  });
+
+  document.getElementById("btn-qr-close").addEventListener("click", function(){
+    document.getElementById("overlay-qr").classList.add("hidden");
+  });
+
+  var scanStream = null;
+  var scanRAF = null;
+  var scanMode = "qr";
+  var scanCanvas = document.createElement("canvas");
+  var barcodeDetector = null;
+  if (typeof BarcodeDetector !== "undefined"){
+    try {
+      barcodeDetector = new BarcodeDetector({ formats: ["qr_code","ean_13","ean_8","upc_a","upc_e","code_128"] });
+    } catch (e){
+      barcodeDetector = null;
+    }
+  }
+
+  function setScanMode(m){
+    scanMode = m;
+    document.getElementById("tab-qr").classList.toggle("active", m === "qr");
+    document.getElementById("tab-barcode").classList.toggle("active", m === "barcode");
+    document.getElementById("manual-code").placeholder = m === "qr"
+      ? "QRが読み取れない場合はここにコード文字列を入力"
+      : "バーコードの数字を直接入力";
+  }
+
+  document.getElementById("tab-qr").addEventListener("click", function(){ setScanMode("qr"); });
+  document.getElementById("tab-barcode").addEventListener("click", function(){ setScanMode("barcode"); });
+
+  function setScanStatus(msg){
+    document.getElementById("scan-status").textContent = msg;
+  }
+
+  function openScanner(){
+    document.getElementById("overlay-scan").classList.remove("hidden");
+    setScanStatus("カメラを起動しています...");
+    var video = document.getElementById("scan-video");
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream){
+        scanStream = stream;
+        video.srcObject = stream;
+        video.play();
+        setScanStatus(barcodeDetector ? "読み取り中..." : "QRを読み取り中...（バーコードは非対応ブラウザのため下欄に直接入力してください）");
+        scanRAF = requestAnimationFrame(scanTick);
+      }).catch(function(){
+        setScanStatus("カメラを起動できませんでした。下の欄に直接入力してください。");
+      });
+    } else {
+      setScanStatus("このブラウザはカメラ利用に対応していません。下の欄に直接入力してください。");
+    }
+  }
+
+  function closeScanner(){
+    document.getElementById("overlay-scan").classList.add("hidden");
+    if (scanRAF) cancelAnimationFrame(scanRAF);
+    scanRAF = null;
+    if (scanStream){
+      scanStream.getTracks().forEach(function(t){ t.stop(); });
+      scanStream = null;
+    }
+  }
+
+  function scanTick(){
+    var video = document.getElementById("scan-video");
+    if (video.readyState === video.HAVE_ENOUGH_DATA){
+      if (barcodeDetector){
+        barcodeDetector.detect(video).then(function(codes){
+          if (codes && codes.length > 0){
+            handleScanResult(codes[0].rawValue);
+          } else {
+            scanRAF = requestAnimationFrame(scanTick);
+          }
+        }).catch(function(){
+          scanRAF = requestAnimationFrame(scanTick);
+        });
+        return;
+      } else if (typeof jsQR === "function"){
+        scanCanvas.width = video.videoWidth;
+        scanCanvas.height = video.videoHeight;
+        var ctx = scanCanvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+        var imgData = ctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        var result = jsQR(imgData.data, imgData.width, imgData.height);
+        if (result && result.data){
+          handleScanResult(result.data);
+          return;
+        }
+      }
+    }
+    scanRAF = requestAnimationFrame(scanTick);
+  }
+
+  function handleScanResult(value){
+    closeScanner();
+    applyScannedValue(value);
+  }
+
+  function applyScannedValue(value){
+    var fighter = payloadToFighter(value);
+    if (!fighter) fighter = fighterFromCode(value);
+    if (!fighter) return;
+    document.getElementById("name-b").value = fighter.name;
+    document.getElementById("text-b").value = "";
+    forcedTypeB = fighter.typeKey;
+    scannedFighterB = fighter;
+    Array.prototype.forEach.call(elChipsB.children, function(c){
+      c.classList.toggle("active", c.getAttribute("data-key") === forcedTypeB);
+    });
+  }
+
+  document.getElementById("btn-scan-b").addEventListener("click", openScanner);
+  document.getElementById("btn-scan-close").addEventListener("click", closeScanner);
+
+  document.getElementById("btn-manual-submit").addEventListener("click", function(){
+    var input = document.getElementById("manual-code");
+    var val = input.value.trim();
+    if (!val) return;
+    closeScanner();
+    applyScannedValue(val);
+    input.value = "";
+  });
+
+  function renderProfilePanel(){
+    var p = loadProfile();
+    var lv = xpToLevel(p.xp);
+    var xpInLevel = p.xp % 100;
+    document.getElementById("prof-level").textContent = "Lv." + lv;
+    document.getElementById("prof-xpfill").style.width = xpInLevel + "%";
+    document.getElementById("prof-battles").textContent = p.battles;
+    document.getElementById("prof-wins").textContent = p.wins;
+    document.getElementById("prof-streak").textContent = p.streak;
+    document.getElementById("prof-beststreak").textContent = p.bestStreak;
+    var titlesEl = document.getElementById("prof-titles");
+    if (p.titles.length === 0){
+      titlesEl.innerHTML = '<span class="avatar-hint">まだ称号はありません。バトルで勝利を重ねよう。</span>';
+    } else {
+      titlesEl.innerHTML = p.titles.map(function(id){
+        return '<span class="title-badge">' + escapeHtml(titleLabel(id)) + '</span>';
+      }).join("");
+    }
+  }
+
+  document.getElementById("btn-achievements").addEventListener("click", function(){
+    renderProfilePanel();
+    document.getElementById("overlay-profile").classList.remove("hidden");
+  });
+
+  document.getElementById("btn-profile-close").addEventListener("click", function(){
+    document.getElementById("overlay-profile").classList.add("hidden");
+  });
+
+  document.getElementById("btn-profile-reset").addEventListener("click", function(){
+    if (window.confirm("記録をリセットしますか？")){
+      saveProfile({ battles: 0, wins: 0, streak: 0, bestStreak: 0, xp: 0, titles: [] });
+      renderProfilePanel();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
