@@ -56,7 +56,6 @@ export function ResultScreen({
   return (
     <div className="panel">
       <div className="result">
-        <h2>{winner.name} の勝利！</h2>
         {newTitles.length > 0 && <div className="newtitle-banner">称号解除！「{newTitles.join("」「")}」</div>}
         <canvas id="card" width={900} height={520} ref={canvasRef} />
         <div>
