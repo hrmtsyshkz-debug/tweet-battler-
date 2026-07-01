@@ -18,7 +18,7 @@ export function StatsScreen({
   xHandleB?: string;
   onIssueQr: () => void;
   onIssueChallenge: () => void;
-  onFight: () => void;
+  onFight: (mode: "auto" | "manual") => void;
 }) {
   return (
     <>
@@ -37,9 +37,12 @@ export function StatsScreen({
         </div>
       </div>
       <div className="fight-bar">
-        <div className="fight-bar-inner">
-          <button className="big" type="button" onClick={onFight}>
-            たたかう！
+        <div className="fight-bar-inner two">
+          <button className="big" type="button" onClick={() => onFight("auto")}>
+            オートで観戦
+          </button>
+          <button className="big" type="button" onClick={() => onFight("manual")}>
+            自分で戦う
           </button>
         </div>
       </div>

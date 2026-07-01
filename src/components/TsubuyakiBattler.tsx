@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { BattleScreen } from "@/components/BattleScreen";
+import { AutoBattleScreen } from "@/components/AutoBattleScreen";
+import { ManualBattleScreen } from "@/components/ManualBattleScreen";
 import { ChallengeOverlay } from "@/components/ChallengeOverlay";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ProfileOverlay } from "@/components/ProfileOverlay";
@@ -39,6 +40,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
   const [scannedFighterB, setScannedFighterB] = useState<Fighter | null>(initialOpponent ?? null);
   const [fighterA, setFighterA] = useState<Fighter | null>(null);
   const [fighterB, setFighterB] = useState<Fighter | null>(null);
+  const [battleMode, setBattleMode] = useState<"auto" | "manual">("auto");
   const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
   const [newTitles, setNewTitles] = useState<string[]>([]);
   const [badgeTierA, setBadgeTierA] = useState(0);
@@ -68,18 +70,25 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
     setScreen("stats");
   }
 
-  function handleFight() {
+  function handleFight(mode: "auto" | "manual") {
     if (!fighterA || !fighterB) return;
+    setBattleMode(mode);
     fighterA.currentHp = fighterA.hp;
     fighterB.currentHp = fighterB.hp;
-    const result = simulateBattle(fighterA, fighterB);
-    setBattleResult(result);
+    if (mode === "auto") {
+      const result = simulateBattle(fighterA, fighterB);
+      setBattleResult(result);
+    } else {
+      setBattleResult(null);
+    }
     setScreen("battle");
   }
 
-  function handleBattleDone() {
-    if (!battleResult || !fighterA) return;
-    const didWin = battleResult.winner === fighterA;
+  function handleBattleDone(result?: BattleResult) {
+    const finalResult = result || battleResult;
+    if (!finalResult || !fighterA) return;
+    if (result) setBattleResult(result);
+    const didWin = finalResult.winner === fighterA;
     const progress = applyBattleResultToProfile(didWin, fighterA);
     setNewTitles(progress.newTitles);
     setBadgeTierA(computeBadgeTier());
@@ -136,15 +145,26 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
         />
       )}
 
-      {screen === "battle" && fighterA && fighterB && battleResult && (
-        <BattleScreen
+      {screen === "battle" && fighterA && fighterB && battleMode === "auto" && battleResult && (
+        <AutoBattleScreen
           fighterA={fighterA}
           fighterB={fighterB}
           battleResult={battleResult}
           badgeTierA={badgeTierA}
           xHandleA={setup.xHandleA}
           xHandleB={setup.xHandleB}
-          onDone={handleBattleDone}
+          onDone={() => handleBattleDone()}
+        />
+      )}
+
+      {screen === "battle" && fighterA && fighterB && battleMode === "manual" && (
+        <ManualBattleScreen
+          fighterA={fighterA}
+          fighterB={fighterB}
+          badgeTierA={badgeTierA}
+          xHandleA={setup.xHandleA}
+          xHandleB={setup.xHandleB}
+          onDone={(result) => handleBattleDone(result)}
         />
       )}
 
