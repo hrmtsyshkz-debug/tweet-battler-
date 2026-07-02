@@ -153,7 +153,7 @@ export function SetupScreen({
             <input
               type="text"
               maxLength={12}
-              placeholder="例：佳"
+              placeholder="例：名無しさん"
               value={state.nameA}
               onChange={(e) => onChange({ nameA: e.target.value })}
             />
