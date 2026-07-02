@@ -17,9 +17,22 @@ export function shadeColor(hex: string, percent: number): string {
   return "#" + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
 }
 
+function spriteSeedBase(fighter: Fighter): string {
+  return fighter.name + "|" + fighter.typeKey + "|sprite|" + fighter.hp + "-" + fighter.atk + "-" + fighter.def + "-" + fighter.spd;
+}
+
+export function isShinyFighter(f: Fighter): boolean {
+  return hashString(spriteSeedBase(f) + "|shiny") % 32 === 0;
+}
+
+export const SHINY_BODY_COLOR = "#f0c33c";
+
+export function spriteBodyColor(fighter: Fighter): string {
+  return isShinyFighter(fighter) ? SHINY_BODY_COLOR : fighter.type.color;
+}
+
 export function generateSpriteGrid(fighter: Fighter): number[][] {
-  const seedStr =
-    fighter.name + "|" + fighter.typeKey + "|sprite|" + fighter.hp + "-" + fighter.atk + "-" + fighter.def + "-" + fighter.spd;
+  const seedStr = spriteSeedBase(fighter);
   const rng = mulberry32(hashString(seedStr));
   if (SPRITE_TEMPLATES.length > 0) {
     const template = SPRITE_TEMPLATES[Math.floor(rng() * SPRITE_TEMPLATES.length)];
@@ -77,7 +90,7 @@ export function drawSpriteToCanvas(canvas: HTMLCanvasElement | null, fighter: Fi
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const offsetX = Math.floor((canvas.width - cell * W) / 2);
   const offsetY = canvas.height - cell * H - Math.floor(cell * 0.4);
-  const bodyColor = fighter.type.color;
+  const bodyColor = spriteBodyColor(fighter);
   const outline = shadeColor(bodyColor, -70);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {

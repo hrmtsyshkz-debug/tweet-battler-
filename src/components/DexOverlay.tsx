@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { DexEntry, loadDex } from "@/lib/dex";
 import { toFighterFromSaved } from "@/lib/profile";
+import { isShinyFighter } from "@/lib/sprite";
 import { FighterCard } from "./FighterCard";
 import { SpriteCanvas } from "./SpriteCanvas";
 
@@ -45,7 +46,10 @@ export function DexOverlay({ open, onClose }: { open: boolean; onClose: () => vo
                   onClick={() => setSelectedKey(isActive ? null : entry.key)}
                 >
                   <SpriteCanvas fighter={fighter} mirror={false} badgeTier={0} size={64} />
-                  <span className="dex-no">No.{String(i + 1).padStart(3, "0")}</span>
+                  <span className="dex-no">
+                    {isShinyFighter(fighter) && <span style={{ color: "#c9a227" }}>✦ </span>}
+                    No.{String(i + 1).padStart(3, "0")}
+                  </span>
                   <span className="dex-name">{entry.fighter.name}</span>
                   <span className="dex-type" style={{ color: fighter.type.color }}>
                     {fighter.type.label}

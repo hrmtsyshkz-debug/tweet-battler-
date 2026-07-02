@@ -1,3 +1,4 @@
+import { isShinyFighter } from "@/lib/sprite";
 import { Fighter } from "@/lib/types";
 import { SpriteCanvas } from "./SpriteCanvas";
 import { TrainerBadge } from "./TrainerBadge";
@@ -22,6 +23,7 @@ export function FighterCard({
   badgeTier: number;
   xHandle?: string;
 }) {
+  const shiny = isShinyFighter(fighter);
   return (
     <div className="statcard">
       <SpriteCanvas fighter={fighter} mirror={mirror} badgeTier={badgeTier} size={90} className="sprite-canvas-stat" />
@@ -35,6 +37,11 @@ export function FighterCard({
       >
         {fighter.type.label}
       </div>
+      {shiny && (
+        <div className="shinybadge">
+          ✦ 色違い
+        </div>
+      )}
       <div className="statline hp">
         <span className="label">HP</span>
         <StatBar val={fighter.hp} />

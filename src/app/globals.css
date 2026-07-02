@@ -142,6 +142,11 @@ button.small:hover { border-color: var(--accent); background: var(--bg); }
   display: inline-block; font-size: 11px; padding: 4px 12px; border-radius: 999px;
   margin: 2px 0 12px; font-weight: 700;
 }
+.shinybadge {
+  display: inline-block; font-size: 11px; padding: 4px 12px; border-radius: 999px;
+  margin: 2px 6px 12px; font-weight: 700;
+  background: #fdf3d1; color: #8a6d1a;
+}
 .statline { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 7px 0; color: var(--ink-soft); text-align: left; }
 .statline .label { width: 34px; font-weight: 500; }
 .statline .track { flex: 1; height: 10px; background: var(--bg); border-radius: 999px; overflow: hidden; }

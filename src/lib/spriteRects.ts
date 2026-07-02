@@ -1,5 +1,5 @@
 import { ACCESSORY } from "./data";
-import { generateSpriteGrid, shadeColor, SPRITE_H, SPRITE_W } from "./sprite";
+import { generateSpriteGrid, shadeColor, spriteBodyColor, SPRITE_H, SPRITE_W } from "./sprite";
 import { TEMPLATE_EYE_COL_L, TEMPLATE_EYE_COL_R, TEMPLATE_EYE_ROW } from "./spriteTemplates";
 import { Fighter } from "./types";
 
@@ -29,7 +29,7 @@ export function computeSpriteRects(
   const cell = Math.floor(canvasSize / W);
   const offsetX = Math.floor((canvasSize - cell * W) / 2);
   const offsetY = canvasSize - cell * H - Math.floor(cell * 0.4);
-  const bodyColor = fighter.type.color;
+  const bodyColor = spriteBodyColor(fighter);
   const outline = shadeColor(bodyColor, -70);
   const thin = Math.max(1, Math.floor(cell * 0.15));
   const rects: SpriteRect[] = [];
