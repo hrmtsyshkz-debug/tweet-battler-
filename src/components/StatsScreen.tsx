@@ -7,6 +7,7 @@ export function StatsScreen({
   badgeTierA,
   xHandleA,
   xHandleB,
+  customSrcA,
   opponentRecord,
   onIssueQr,
   onIssueChallenge,
@@ -18,6 +19,7 @@ export function StatsScreen({
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  customSrcA?: string | null;
   opponentRecord?: { wins: number; losses: number } | null;
   onIssueQr: () => void;
   onIssueChallenge: () => void;
@@ -30,7 +32,7 @@ export function StatsScreen({
       <div className="panel with-fight-bar">
         <div className="stats-grid">
           <div>
-            <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} />
+            <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} customSrc={customSrcA} />
             {onRegisterTrained && (
               <div style={{ textAlign: "center", marginTop: 6 }}>
                 <button className="small" type="button" onClick={onRegisterTrained}>

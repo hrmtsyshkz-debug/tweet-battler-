@@ -13,6 +13,7 @@ export function ManualBattleScreen({
   badgeTierA,
   xHandleA,
   xHandleB,
+  customSrcA,
   onDone,
 }: {
   fighterA: Fighter;
@@ -20,6 +21,7 @@ export function ManualBattleScreen({
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  customSrcA?: string | null;
   onDone: (result: BattleResult) => void;
 }) {
   const [lines, setLines] = useState<LogEntry[]>([]);
@@ -167,6 +169,7 @@ export function ManualBattleScreen({
         badgeTierA={badgeTierA}
         xHandleA={xHandleA}
         xHandleB={xHandleB}
+        customSrcA={customSrcA}
         fxA={fxA}
         fxB={fxB}
       />

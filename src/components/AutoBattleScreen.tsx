@@ -13,6 +13,7 @@ export function AutoBattleScreen({
   badgeTierA,
   xHandleA,
   xHandleB,
+  customSrcA,
   onDone,
 }: {
   fighterA: Fighter;
@@ -21,6 +22,7 @@ export function AutoBattleScreen({
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  customSrcA?: string | null;
   onDone: () => void;
 }) {
   const [lines, setLines] = useState<LogEntry[]>([]);
@@ -120,6 +122,7 @@ export function AutoBattleScreen({
         badgeTierA={badgeTierA}
         xHandleA={xHandleA}
         xHandleB={xHandleB}
+        customSrcA={customSrcA}
         fxA={fxA}
         fxB={fxB}
       />

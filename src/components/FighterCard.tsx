@@ -17,11 +17,13 @@ export function FighterCard({
   mirror,
   badgeTier,
   xHandle,
+  customSrc,
 }: {
   fighter: Fighter;
   mirror: boolean;
   badgeTier: number;
   xHandle?: string;
+  customSrc?: string | null;
 }) {
   const shiny = isShinyFighter(fighter);
   return (
@@ -29,7 +31,7 @@ export function FighterCard({
       <SpriteCanvas fighter={fighter} mirror={mirror} badgeTier={badgeTier} size={90} className="sprite-canvas-stat" />
       <div className="name">
         {fighter.name}
-        <TrainerBadge handle={xHandle} />
+        <TrainerBadge handle={xHandle} customSrc={customSrc} />
       </div>
       <div
         className="typebadge"

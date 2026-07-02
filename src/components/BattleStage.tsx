@@ -12,6 +12,7 @@ function HpBox({
   hp,
   maxHp,
   xHandle,
+  customSrc,
 }: {
   side: "a" | "b";
   name: string;
@@ -19,6 +20,7 @@ function HpBox({
   hp: number;
   maxHp: number;
   xHandle?: string;
+  customSrc?: string | null;
 }) {
   const pct = Math.max(0, Math.round((hp / maxHp) * 100));
   const color = pct > 50 ? "#4ade80" : pct > 20 ? "#facc15" : "#f97362";
@@ -27,7 +29,7 @@ function HpBox({
       <div className="row1">
         <span>
           {name}
-          <TrainerBadge handle={xHandle} size={18} />
+          <TrainerBadge handle={xHandle} size={18} customSrc={customSrc} />
         </span>
         <span>Lv.{level}</span>
       </div>
@@ -60,6 +62,7 @@ export function BattleStage({
   badgeTierA,
   xHandleA,
   xHandleB,
+  customSrcA,
   fxA,
   fxB,
 }: {
@@ -72,6 +75,7 @@ export function BattleStage({
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  customSrcA?: string | null;
   fxA?: HitFx | null;
   fxB?: HitFx | null;
 }) {
@@ -80,7 +84,15 @@ export function BattleStage({
       <div className="platform opp" />
       <div className="platform player" />
       <HpBox side="b" name={fighterB.name} level={calcLevel(fighterB)} hp={hpB} maxHp={fighterB.hp} xHandle={xHandleB} />
-      <HpBox side="a" name={fighterA.name} level={calcLevel(fighterA)} hp={hpA} maxHp={fighterA.hp} xHandle={xHandleA} />
+      <HpBox
+        side="a"
+        name={fighterA.name}
+        level={calcLevel(fighterA)}
+        hp={hpA}
+        maxHp={fighterA.hp}
+        xHandle={xHandleA}
+        customSrc={customSrcA}
+      />
       <div className={"sprite-wrap opp" + (animB ? " " + animB : "")}>
         <SpriteCanvas fighter={fighterB} mirror={true} badgeTier={0} size={120} />
         {fxB && (

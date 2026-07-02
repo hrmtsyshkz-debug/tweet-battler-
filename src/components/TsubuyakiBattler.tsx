@@ -13,6 +13,7 @@ import { ScanOverlay } from "@/components/ScanOverlay";
 import { SetupScreen, SetupState } from "@/components/SetupScreen";
 import { StatsScreen } from "@/components/StatsScreen";
 import { simulateBattle } from "@/lib/battle";
+import { clearCustomIcon, loadCustomIcon, saveCustomIcon } from "@/lib/customIcon";
 import { registerToDex } from "@/lib/dex";
 import { generateFighter } from "@/lib/fighter";
 import { applyBattleResultToProfile, computeBadgeTier } from "@/lib/profile";
@@ -52,6 +53,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
   const [trainedName, setTrainedName] = useState<string | null>(null);
   const [usedTrained, setUsedTrained] = useState(false);
   const [trainingGains, setTrainingGains] = useState<string | null>(null);
+  const [customIcon, setCustomIcon] = useState<string | null>(null);
 
   const [scanOpen, setScanOpen] = useState(false);
   const [qrFighter, setQrFighter] = useState<Fighter | null>(null);
@@ -62,7 +64,17 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
   useEffect(() => {
     const t = loadTrained();
     setTrainedName(t ? t.fighter.name : null);
+    setCustomIcon(loadCustomIcon());
   }, []);
+
+  function handleCustomIconChange(dataUrl: string | null) {
+    if (dataUrl) {
+      saveCustomIcon(dataUrl);
+    } else {
+      clearCustomIcon();
+    }
+    setCustomIcon(dataUrl);
+  }
 
   function handleSetupChange(patch: Partial<SetupState>) {
     setSetup((prev) => ({ ...prev, ...patch }));
@@ -201,6 +213,8 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           onStart={handleStart}
           trainedName={trainedName}
           onStartTrained={handleStartTrained}
+          customIcon={customIcon}
+          onCustomIconChange={handleCustomIconChange}
         />
       )}
 
@@ -213,6 +227,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           badgeTierA={badgeTierA}
           xHandleA={setup.xHandleA}
           xHandleB={setup.xHandleB}
+          customSrcA={customIcon}
           opponentRecord={opponentRecord}
           onIssueQr={() => setQrFighter(fighterA)}
           onIssueChallenge={() => setChallengeFighter(fighterA)}
@@ -229,6 +244,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           badgeTierA={badgeTierA}
           xHandleA={setup.xHandleA}
           xHandleB={setup.xHandleB}
+          customSrcA={customIcon}
           onDone={() => handleBattleDone()}
         />
       )}
@@ -240,6 +256,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           badgeTierA={badgeTierA}
           xHandleA={setup.xHandleA}
           xHandleB={setup.xHandleB}
+          customSrcA={customIcon}
           onDone={(result) => handleBattleDone(result)}
         />
       )}

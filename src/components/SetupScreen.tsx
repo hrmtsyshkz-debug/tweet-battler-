@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TYPES } from "@/lib/data";
+import { fileToIconDataUrl } from "@/lib/customIcon";
 import { TypeChips } from "./TypeChips";
 
 const RANDOM_NAMES = ["ライバル", "謎の刺客", "隣の席の人", "元同期", "フォロワー"];
@@ -44,6 +45,60 @@ function XHandleField({ value, onChange }: { value: string; onChange: (v: string
   );
 }
 
+function CustomIconField({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (dataUrl: string | null) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const dataUrl = await fileToIconDataUrl(file);
+      onChange(dataUrl);
+    } catch {
+      // ignore invalid/unreadable image
+    }
+  }
+
+  return (
+    <>
+      <label>トレーナーアイコン（この端末だけに表示・任意）</label>
+      <div className="avatar-row">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+        <button className="small" type="button" onClick={() => fileInputRef.current?.click()}>
+          画像を選ぶ
+        </button>
+        {value && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="avatar-preview"
+              alt=""
+              src={value}
+              style={{ display: "inline-block", width: 24, height: 24 }}
+            />
+            <button className="small" type="button" onClick={() => onChange(null)}>
+              削除
+            </button>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
 function truncateName(name: string, max: number): string {
   if (name.length <= max) return name;
   return name.slice(0, max) + "…";
@@ -58,6 +113,8 @@ export function SetupScreen({
   onStart,
   trainedName,
   onStartTrained,
+  customIcon,
+  onCustomIconChange,
 }: {
   state: SetupState;
   onChange: (patch: Partial<SetupState>) => void;
@@ -67,6 +124,8 @@ export function SetupScreen({
   onStart: () => void;
   trainedName?: string | null;
   onStartTrained?: () => void;
+  customIcon?: string | null;
+  onCustomIconChange?: (dataUrl: string | null) => void;
 }) {
   function handleRandomB() {
     const name = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
@@ -107,6 +166,9 @@ export function SetupScreen({
             <label>または属性を直接選ぶ</label>
             <TypeChips selected={state.forcedTypeA} onSelect={(key) => onChange({ forcedTypeA: key })} />
             <XHandleField value={state.xHandleA} onChange={(v) => onChange({ xHandleA: v })} />
+            {onCustomIconChange && (
+              <CustomIconField value={customIcon ?? null} onChange={onCustomIconChange} />
+            )}
           </div>
           <div className="fcard">
             <div className="fcard-head">
