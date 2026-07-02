@@ -134,7 +134,7 @@ export function SetupScreen({
       <div className="fight-bar">
         <div className="fight-bar-inner">
           <button className="big" type="button" onClick={onStart}>
-            バトル開始！
+            準備完了！！
           </button>
         </div>
       </div>
