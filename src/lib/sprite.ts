@@ -31,6 +31,35 @@ export function spriteBodyColor(fighter: Fighter): string {
   return isShinyFighter(fighter) ? SHINY_BODY_COLOR : fighter.type.color;
 }
 
+export type SpritePatternKind = "none" | "spots" | "stripes" | "belly";
+
+const PATTERN_KINDS: SpritePatternKind[] = ["none", "spots", "stripes", "belly"];
+
+/**
+ * Deterministically picks a decorative pattern for this fighter's sprite,
+ * seeded independently from (but derived from) the sprite seed so it stays
+ * stable across renders without perturbing template/shiny selection.
+ * Weights: none 25% / spots 25% / stripes 25% / belly 25%.
+ */
+export function spritePatternKind(fighter: Fighter): SpritePatternKind {
+  const rng = mulberry32(hashString(spriteSeedBase(fighter) + "|pattern"));
+  const idx = Math.floor(rng() * PATTERN_KINDS.length);
+  return PATTERN_KINDS[Math.min(idx, PATTERN_KINDS.length - 1)];
+}
+
+/**
+ * Pure geometry test: does (x, y) belong to the decorative pattern for the
+ * given kind? Only ever true for cells that are actually filled in the grid.
+ */
+export function isPatternCell(kind: SpritePatternKind, x: number, y: number, grid: number[][]): boolean {
+  if (kind === "none") return false;
+  if (!grid[y]?.[x]) return false;
+  if (kind === "spots") return (x * 3 + y * 5) % 7 === 0;
+  if (kind === "stripes") return y % 3 === 1;
+  if (kind === "belly") return y >= 6 && y <= 11 && x >= 5 && x <= 8;
+  return false;
+}
+
 /**
  * Classifies a filled sprite cell as "highlight" | "base" | "shadow" based on
  * its neighbors, to give the pixel-art a simple top-left lit look.
@@ -59,6 +88,12 @@ export function spriteCellColor(fighter: Fighter, grid: number[][], x: number, y
   const base = shiny ? SHINY_BODY_COLOR : fighter.type.color;
   if (tone === "highlight") return shiny ? "#fbe89a" : shadeColor(base, 18);
   if (tone === "shadow") return shadeColor(base, shiny ? -45 : -30);
+  // Pattern overlays only touch "base" tone cells so the top-light shading
+  // (highlight/shadow) still reads clearly on every template.
+  const pattern = spritePatternKind(fighter);
+  if (isPatternCell(pattern, x, y, grid)) {
+    return shadeColor(base, shiny ? -10 : -16);
+  }
   return base;
 }
 
