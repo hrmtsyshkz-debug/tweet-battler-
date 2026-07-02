@@ -1,4 +1,5 @@
 import { typeByKey } from "./data";
+import { dexCount } from "./dex";
 import { Fighter, Profile, SavedFighter } from "./types";
 
 export const PROFILE_KEY = "tsubuyakiBattlerProfile_v1";
@@ -48,6 +49,8 @@ export const TITLE_MILESTONES: TitleMilestone[] = [
   { id: "streak5", label: "連勝街道まっしぐら", cond: (p) => p.bestStreak >= 5 },
   { id: "battles10", label: "戦い慣れしてきた", cond: (p) => p.battles >= 10 },
   { id: "lv10", label: "自己満Lv10到達", cond: (p) => xpToLevel(p.xp) >= 10 },
+  { id: "dex10", label: "図鑑コレクター", cond: (p) => (p.dexCount ?? 0) >= 10 },
+  { id: "dex30", label: "図鑑マニア", cond: (p) => (p.dexCount ?? 0) >= 30 },
 ];
 
 export function titleLabel(id: string): string {
@@ -83,6 +86,7 @@ export function applyBattleResultToProfile(didWin: boolean, ownFighter?: Fighter
     };
   }
   p.battles += 1;
+  p.dexCount = dexCount();
   if (didWin) {
     p.wins += 1;
     p.streak += 1;

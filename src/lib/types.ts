@@ -62,4 +62,5 @@ export interface Profile {
   xp: number;
   titles: string[];
   lastFighter?: SavedFighter | null;
+  dexCount?: number;
 }

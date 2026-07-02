@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AutoBattleScreen } from "@/components/AutoBattleScreen";
 import { ManualBattleScreen } from "@/components/ManualBattleScreen";
 import { ChallengeOverlay } from "@/components/ChallengeOverlay";
+import { DexOverlay } from "@/components/DexOverlay";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ProfileOverlay } from "@/components/ProfileOverlay";
 import { QrOverlay } from "@/components/QrOverlay";
@@ -12,6 +13,7 @@ import { ScanOverlay } from "@/components/ScanOverlay";
 import { SetupScreen, SetupState } from "@/components/SetupScreen";
 import { StatsScreen } from "@/components/StatsScreen";
 import { simulateBattle } from "@/lib/battle";
+import { registerToDex } from "@/lib/dex";
 import { generateFighter } from "@/lib/fighter";
 import { applyBattleResultToProfile, computeBadgeTier } from "@/lib/profile";
 import { fighterFromCode, payloadToFighter } from "@/lib/qr";
@@ -49,6 +51,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
   const [qrFighter, setQrFighter] = useState<Fighter | null>(null);
   const [challengeFighter, setChallengeFighter] = useState<Fighter | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [dexOpen, setDexOpen] = useState(false);
 
   function handleSetupChange(patch: Partial<SetupState>) {
     setSetup((prev) => ({ ...prev, ...patch }));
@@ -89,6 +92,8 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
     if (!finalResult || !fighterA) return;
     if (result) setBattleResult(result);
     const didWin = finalResult.winner === fighterA;
+    if (fighterB) registerToDex(fighterB);
+    registerToDex(fighterA);
     const progress = applyBattleResultToProfile(didWin, fighterA);
     setNewTitles(progress.newTitles);
     setBadgeTierA(computeBadgeTier());
@@ -126,6 +131,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           onChange={handleSetupChange}
           onScanB={() => setScanOpen(true)}
           onAchievements={() => setProfileOpen(true)}
+          onDex={() => setDexOpen(true)}
           onStart={handleStart}
         />
       )}
@@ -183,6 +189,7 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
       <QrOverlay fighter={qrFighter} onClose={() => setQrFighter(null)} />
       <ChallengeOverlay fighter={challengeFighter} onClose={() => setChallengeFighter(null)} />
       <ProfileOverlay open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <DexOverlay open={dexOpen} onClose={() => setDexOpen(false)} />
     </div>
   );
 }

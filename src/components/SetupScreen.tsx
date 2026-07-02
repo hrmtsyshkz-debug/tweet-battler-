@@ -49,12 +49,14 @@ export function SetupScreen({
   onChange,
   onScanB,
   onAchievements,
+  onDex,
   onStart,
 }: {
   state: SetupState;
   onChange: (patch: Partial<SetupState>) => void;
   onScanB: () => void;
   onAchievements: () => void;
+  onDex: () => void;
   onStart: () => void;
 }) {
   function handleRandomB() {
@@ -70,9 +72,14 @@ export function SetupScreen({
           <div className="fcard">
             <div className="fcard-head">
               <h3>YOU</h3>
-              <button className="small" type="button" onClick={onAchievements}>
-                実績を見る
-              </button>
+              <div className="fcard-head-btns">
+                <button className="small" type="button" onClick={onAchievements}>
+                  実績を見る
+                </button>
+                <button className="small" type="button" onClick={onDex}>
+                  図鑑
+                </button>
+              </div>
             </div>
             <label>ニックネーム</label>
             <input

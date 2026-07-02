@@ -290,3 +290,19 @@ canvas#card { border-radius: 20px; box-shadow: var(--shadow-card); margin: 12px 
 .titles-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .title-badge { font-size: 11px; padding: 5px 11px; background: #eef0ff; color: #6a5acd; border-radius: 999px; font-weight: 700; }
 .newtitle-banner { background: #fff3d6; border: none; border-radius: 14px; padding: 12px; margin: 12px 0; font-size: 12px; font-weight: 700; text-align: center; color: #c9820b; }
+
+.dex-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+@media (max-width: 380px) {
+  .dex-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.dex-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg); border-radius: 14px; padding: 8px; cursor: pointer;
+  border: 2px solid transparent; width: 100%; max-width: 100%; overflow: hidden;
+}
+.dex-cell:hover { border-color: var(--accent); }
+.dex-cell.active { border-color: var(--accent); }
+.dex-cell canvas { image-rendering: pixelated; background: var(--card); border-radius: 10px; margin-bottom: 4px; }
+.dex-no { font-size: 10px; color: var(--ink-faint); }
+.dex-name { font-size: 11px; font-weight: 700; color: var(--ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dex-type { font-size: 10px; font-weight: 500; margin-top: 2px; }
