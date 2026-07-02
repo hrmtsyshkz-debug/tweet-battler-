@@ -5,6 +5,7 @@ import { drawResultCard } from "@/lib/card";
 import { encodeOgData } from "@/lib/ogPayload";
 import { playVictory } from "@/lib/sound";
 import { BattleResult, Fighter } from "@/lib/types";
+import { generateVerdict } from "@/lib/verdict";
 
 export function ResultScreen({
   fighterA,
@@ -23,12 +24,13 @@ export function ResultScreen({
   const victoryPlayedRef = useRef(false);
   const { winner, loser, finishingMove } = battleResult;
   const winnerIsPlayer = winner === fighterA;
+  const verdict = generateVerdict(fighterA);
 
   useEffect(() => {
     if (canvasRef.current) {
-      drawResultCard(canvasRef.current, winner, loser, finishingMove, winnerIsPlayer ? badgeTierA : 0);
+      drawResultCard(canvasRef.current, winner, loser, finishingMove, winnerIsPlayer ? badgeTierA : 0, verdict);
     }
-  }, [winner, loser, finishingMove, winnerIsPlayer, badgeTierA]);
+  }, [winner, loser, finishingMove, winnerIsPlayer, badgeTierA, verdict]);
 
   useEffect(() => {
     if (victoryPlayedRef.current) return;
@@ -47,12 +49,12 @@ export function ResultScreen({
   }
 
   function buildShareUrl() {
-    const encoded = encodeOgData(winner, loser, finishingMove, winnerIsPlayer ? badgeTierA : 0);
+    const encoded = encodeOgData(winner, loser, finishingMove, winnerIsPlayer ? badgeTierA : 0, verdict);
     return `${window.location.origin}/r/${encoded}`;
   }
 
   function handleShare() {
-    const text = `${winner.name}が${loser.name}に「${finishingMove || "謎の一撃"}」で勝利した。 #つぶやきバトラー`;
+    const text = `${winner.name}が${loser.name}を「${finishingMove || "謎の一撃"}」で撃破。診断→「${verdict}」 #つぶやきバトラー`;
     const shareUrl = buildShareUrl();
     const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(shareUrl);
     window.open(url, "_blank");

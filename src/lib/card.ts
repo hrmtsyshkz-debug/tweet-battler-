@@ -18,7 +18,8 @@ export function drawResultCard(
   winner: Fighter,
   loser: Fighter,
   finishingMove: string | null,
-  winnerBadgeTier: number
+  winnerBadgeTier: number,
+  verdict: string
 ) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -88,9 +89,9 @@ export function drawResultCard(
   ctx.fillStyle = "#6b7a86";
   ctx.fillText("決まり技：「" + (finishingMove || "不明の一撃") + "」", w / 2, plateY + plateSize + 36);
 
-  ctx.font = `400 14px ${FONT}`;
-  ctx.fillStyle = "#9fb0bd";
-  ctx.fillText("あなたのSNSも自動でキャラ化されます", w / 2, plateY + plateSize + 66);
+  ctx.font = `700 16px ${FONT}`;
+  ctx.fillStyle = "#d4537e";
+  ctx.fillText("診断：" + verdict, w / 2, plateY + plateSize + 66);
 
   ctx.font = `700 16px ${FONT}`;
   ctx.fillStyle = "#3a9ee0";

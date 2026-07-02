@@ -22,7 +22,7 @@ export function ChallengeOverlay({ fighter, onClose }: { fighter: Fighter | null
   }
 
   function handleShare() {
-    const text = `${fighter!.name}からの挑戦状！受けて立つ？ #つぶやきバトラー`;
+    const text = `${fighter!.name}からの挑戦状が届いています。逃げてもいいけど、逃げたことは残ります。 #つぶやきバトラー`;
     const shareUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(url);
     window.open(shareUrl, "_blank");
   }

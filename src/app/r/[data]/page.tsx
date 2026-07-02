@@ -7,7 +7,8 @@ export async function generateMetadata({ params }: { params: Promise<{ data: str
   const decoded = decodeOgData(data);
   const title = decoded ? `${decoded.winner.name} の勝利！ - つぶやきバトラー` : "つぶやきバトラー";
   const description = decoded
-    ? `${decoded.winner.name}が${decoded.loser.name}に「${decoded.finishingMove || "謎の一撃"}」で勝利した。`
+    ? `${decoded.winner.name}が${decoded.loser.name}に「${decoded.finishingMove || "謎の一撃"}」で勝利した。` +
+      (decoded.verdict ? ` 診断：${decoded.verdict}` : "")
     : "あなたのSNSが戦う対戦ゲーム";
   const ogImage = `/api/og?d=${data}`;
   return {
@@ -34,6 +35,11 @@ export default async function ResultSharePage({ params }: { params: Promise<{ da
             <p style={{ color: "var(--ink-soft)", fontSize: 14, marginTop: 10 }}>
               決まり技：「{decoded.finishingMove || "不明の一撃"}」
             </p>
+            {decoded.verdict ? (
+              <p style={{ color: "var(--accent-2)", fontSize: 13, marginTop: 4 }}>
+                診断：{decoded.verdict}
+              </p>
+            ) : null}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/api/og?d=${data}`} alt="バトル結果" style={{ maxWidth: "100%", borderRadius: 20, boxShadow: "var(--shadow-card)", marginTop: 16 }} />
           </>

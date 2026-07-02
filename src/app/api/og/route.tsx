@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const { winner, loser, finishingMove, winnerBadgeTier } = decoded;
-  const spriteSize = 200;
+  const { winner, loser, finishingMove, winnerBadgeTier, verdict } = decoded;
+  const spriteSize = 160;
   const plateSize = spriteSize + 40;
   const winnerRects = computeSpriteRects(winner, false, winnerBadgeTier, spriteSize);
   const loserRects = computeSpriteRects(loser, true, 0, spriteSize);
@@ -60,14 +60,14 @@ export async function GET(req: NextRequest) {
             position: "relative",
           }}
         >
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 24, fontWeight: 700, marginTop: 40 }}>
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 24, fontWeight: 700, marginTop: 24 }}>
             つぶやきバトラー - BATTLE RESULT
           </div>
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#d4537e", fontSize: 50, fontWeight: 700, marginTop: 14 }}>
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#d4537e", fontSize: 46, fontWeight: 700, marginTop: 10 }}>
             {winner.name} の勝利！
           </div>
 
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", alignItems: "flex-start", marginTop: 26, flex: 1 }}>
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", alignItems: "flex-start", marginTop: 12, flex: 1 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 420 }}>
               <div style={{ display: "flex", color: winner.type.color, fontSize: 24, fontWeight: 700 }}>[{winner.type.label}]</div>
               <div style={{ display: "flex", color: "#22303c", fontSize: 28, fontWeight: 700, marginTop: 6 }}>{winner.name}</div>
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
                 fontWeight: 700,
                 alignItems: "center",
                 justifyContent: "center",
-                marginTop: 100,
+                marginTop: 78,
               }}
             >
               VS
@@ -127,10 +127,15 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
 
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#6b7a86", fontSize: 19, marginBottom: 14 }}>
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#6b7a86", fontSize: 19, marginBottom: 10 }}>
             決まり技：「{finishingMove || "不明の一撃"}」
           </div>
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 21, fontWeight: 700, marginBottom: 36 }}>
+          {verdict ? (
+            <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#d4537e", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>
+              診断：{verdict}
+            </div>
+          ) : null}
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 21, fontWeight: 700, marginBottom: 22 }}>
             #つぶやきバトラー
           </div>
         </div>
