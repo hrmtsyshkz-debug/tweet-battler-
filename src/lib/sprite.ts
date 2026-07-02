@@ -31,6 +31,37 @@ export function spriteBodyColor(fighter: Fighter): string {
   return isShinyFighter(fighter) ? SHINY_BODY_COLOR : fighter.type.color;
 }
 
+/**
+ * Classifies a filled sprite cell as "highlight" | "base" | "shadow" based on
+ * its neighbors, to give the pixel-art a simple top-left lit look.
+ * Top edge (no filled neighbor above) wins over the shadow rules.
+ */
+export function spriteCellTone(grid: number[][], x: number, y: number): "highlight" | "base" | "shadow" {
+  const h = grid.length;
+  const w = grid[0]?.length ?? 0;
+  const hasUp = y > 0 && !!grid[y - 1][x];
+  const hasDown = y < h - 1 && !!grid[y + 1][x];
+  const hasRight = x < w - 1 && !!grid[y][x + 1];
+
+  if (!hasUp) return "highlight";
+  if (!hasDown) return "shadow";
+  if (!hasRight && y >= h / 2) return "shadow";
+  return "base";
+}
+
+/**
+ * Resolves the fill color for a given sprite cell, applying spriteCellTone
+ * shading on top of the fighter's base body color (normal or shiny).
+ */
+export function spriteCellColor(fighter: Fighter, grid: number[][], x: number, y: number): string {
+  const tone = spriteCellTone(grid, x, y);
+  const shiny = isShinyFighter(fighter);
+  const base = shiny ? SHINY_BODY_COLOR : fighter.type.color;
+  if (tone === "highlight") return shiny ? "#fbe89a" : shadeColor(base, 18);
+  if (tone === "shadow") return shadeColor(base, shiny ? -45 : -30);
+  return base;
+}
+
 export function generateSpriteGrid(fighter: Fighter): number[][] {
   const seedStr = spriteSeedBase(fighter);
   const rng = mulberry32(hashString(seedStr));
@@ -100,7 +131,7 @@ export function drawSpriteToCanvas(canvas: HTMLCanvasElement | null, fighter: Fi
       const hasDown = y < H - 1 && grid[y + 1][x];
       const hasLeft = x > 0 && grid[y][x - 1];
       const hasRight = x < W - 1 && grid[y][x + 1];
-      ctx.fillStyle = bodyColor;
+      ctx.fillStyle = spriteCellColor(fighter, grid, x, y);
       ctx.fillRect(offsetX + dx * cell, offsetY + y * cell, cell, cell);
       ctx.fillStyle = outline;
       if (!hasUp) ctx.fillRect(offsetX + dx * cell, offsetY + y * cell, cell, Math.max(1, Math.floor(cell * 0.15)));

@@ -1,5 +1,5 @@
 import { ACCESSORY } from "./data";
-import { generateSpriteGrid, shadeColor, spriteBodyColor, SPRITE_H, SPRITE_W } from "./sprite";
+import { generateSpriteGrid, shadeColor, spriteBodyColor, spriteCellColor, SPRITE_H, SPRITE_W } from "./sprite";
 import { TEMPLATE_EYE_COL_L, TEMPLATE_EYE_COL_R, TEMPLATE_EYE_ROW } from "./spriteTemplates";
 import { Fighter } from "./types";
 
@@ -42,7 +42,7 @@ export function computeSpriteRects(
       const hasDown = y < H - 1 && grid[y + 1][x];
       const hasLeft = x > 0 && grid[y][x - 1];
       const hasRight = x < W - 1 && grid[y][x + 1];
-      rects.push({ x: offsetX + dx * cell, y: offsetY + y * cell, w: cell, h: cell, color: bodyColor });
+      rects.push({ x: offsetX + dx * cell, y: offsetY + y * cell, w: cell, h: cell, color: spriteCellColor(fighter, grid, x, y) });
       if (!hasUp) rects.push({ x: offsetX + dx * cell, y: offsetY + y * cell, w: cell, h: thin, color: outline });
       if (!hasDown) rects.push({ x: offsetX + dx * cell, y: offsetY + (y + 1) * cell - thin, w: cell, h: thin, color: outline });
       if (!hasLeft) rects.push({ x: offsetX + dx * cell, y: offsetY + y * cell, w: thin, h: cell, color: outline });

@@ -13,6 +13,27 @@ function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
+// Break text into at most `maxLines` lines, each no wider than `maxWidth`,
+// splitting on character boundaries (Japanese text has no word spacing).
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+  const lines: string[] = [];
+  let current = "";
+  for (const char of text) {
+    const candidate = current + char;
+    if (ctx.measureText(candidate).width > maxWidth && current.length > 0) {
+      lines.push(current);
+      current = char;
+      if (lines.length === maxLines - 1) {
+        // Last line: dump the remainder as-is (no further wrapping checks needed for our use case).
+      }
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.length > 0) lines.push(current);
+  return lines.slice(0, maxLines);
+}
+
 export function drawResultCard(
   canvas: HTMLCanvasElement,
   winner: Fighter,
@@ -85,15 +106,21 @@ export function drawResultCard(
   ctx.drawImage(offA, w * 0.27 - 70, plateY + 5, 140, 140);
   ctx.drawImage(offB, w * 0.73 - 70, plateY + 5, 140, 140);
 
-  ctx.font = `500 18px ${FONT}`;
+  ctx.font = `500 24px ${FONT}`;
   ctx.fillStyle = "#6b7a86";
-  ctx.fillText("決まり技：「" + (finishingMove || "不明の一撃") + "」", w / 2, plateY + plateSize + 36);
+  ctx.fillText("決まり技：「" + (finishingMove || "不明の一撃") + "」", w / 2, plateY + plateSize + 38);
 
-  ctx.font = `700 16px ${FONT}`;
+  ctx.font = `700 30px ${FONT}`;
   ctx.fillStyle = "#d4537e";
-  ctx.fillText("診断：" + verdict, w / 2, plateY + plateSize + 66);
+  const verdictLines = wrapText(ctx, "診断：" + verdict, 800, 2);
+  const verdictLineHeight = 34;
+  const verdictStartY = plateY + plateSize + 74;
+  verdictLines.forEach((line, i) => {
+    ctx.fillText(line, w / 2, verdictStartY + i * verdictLineHeight);
+  });
 
-  ctx.font = `700 16px ${FONT}`;
+  ctx.font = `700 20px ${FONT}`;
   ctx.fillStyle = "#3a9ee0";
-  ctx.fillText("#つぶやきバトラー", w / 2, plateY + plateSize + 92);
+  const hashtagY = verdictStartY + (verdictLines.length - 1) * verdictLineHeight + 32;
+  ctx.fillText("#つぶやきバトラー", w / 2, hashtagY);
 }

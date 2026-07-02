@@ -131,11 +131,11 @@ export async function GET(req: NextRequest) {
             決まり技：「{finishingMove || "不明の一撃"}」
           </div>
           {verdict ? (
-            <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#d4537e", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>
+            <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#d4537e", fontSize: 24, fontWeight: 700, marginBottom: 10 }}>
               診断：{verdict}
             </div>
           ) : null}
-          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 21, fontWeight: 700, marginBottom: 22 }}>
+          <div style={{ display: "flex", width: "100%", justifyContent: "center", color: "#3a9ee0", fontSize: 21, fontWeight: 700, marginBottom: 16 }}>
             #つぶやきバトラー
           </div>
         </div>
