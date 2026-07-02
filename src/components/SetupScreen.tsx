@@ -89,7 +89,7 @@ export function SetupScreen({
               value={state.nameA}
               onChange={(e) => onChange({ nameA: e.target.value })}
             />
-            <label>直近の投稿を3〜5個コピペ（任意）</label>
+            <label>つぶやきを入力（コピペでも適当でもOK・任意）</label>
             <textarea
               placeholder={"例：今日も定時で帰れなかった…\n推しの新曲が尊すぎて仕事にならない\n有給とったのに結局PC開いてる"}
               value={state.textA}
@@ -119,9 +119,9 @@ export function SetupScreen({
               value={state.nameB}
               onChange={(e) => onChange({ nameB: e.target.value })}
             />
-            <label>相手の投稿を3〜5個コピペ（任意）</label>
+            <label>相手のつぶやきを入力（コピペでも適当でもOK・任意）</label>
             <textarea
-              placeholder="友人のポストや特徴を入れてもOK"
+              placeholder="友人のポストや特徴、それっぽい一言でもOK"
               value={state.textB}
               onChange={(e) => onChange({ textB: e.target.value })}
             />
