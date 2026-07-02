@@ -44,6 +44,11 @@ function XHandleField({ value, onChange }: { value: string; onChange: (v: string
   );
 }
 
+function truncateName(name: string, max: number): string {
+  if (name.length <= max) return name;
+  return name.slice(0, max) + "…";
+}
+
 export function SetupScreen({
   state,
   onChange,
@@ -51,6 +56,8 @@ export function SetupScreen({
   onAchievements,
   onDex,
   onStart,
+  trainedName,
+  onStartTrained,
 }: {
   state: SetupState;
   onChange: (patch: Partial<SetupState>) => void;
@@ -58,6 +65,8 @@ export function SetupScreen({
   onAchievements: () => void;
   onDex: () => void;
   onStart: () => void;
+  trainedName?: string | null;
+  onStartTrained?: () => void;
 }) {
   function handleRandomB() {
     const name = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
@@ -132,10 +141,15 @@ export function SetupScreen({
         </div>
       </div>
       <div className="fight-bar">
-        <div className="fight-bar-inner">
+        <div className={trainedName && onStartTrained ? "fight-bar-inner two" : "fight-bar-inner"}>
           <button className="big" type="button" onClick={onStart}>
             準備完了
           </button>
+          {trainedName && onStartTrained && (
+            <button className="big" type="button" onClick={onStartTrained}>
+              {truncateName(trainedName, 8)}で出撃
+            </button>
+          )}
         </div>
       </div>
     </>

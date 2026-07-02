@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AutoBattleScreen } from "@/components/AutoBattleScreen";
 import { ManualBattleScreen } from "@/components/ManualBattleScreen";
 import { ChallengeOverlay } from "@/components/ChallengeOverlay";
@@ -17,7 +17,9 @@ import { registerToDex } from "@/lib/dex";
 import { generateFighter } from "@/lib/fighter";
 import { applyBattleResultToProfile, computeBadgeTier } from "@/lib/profile";
 import { fighterFromCode, payloadToFighter } from "@/lib/qr";
+import { applyResult, getRecord, opponentKeyFor } from "@/lib/records";
 import { BattleResult, Fighter } from "@/lib/types";
+import { applyTrainingResult, loadTrained, registerTrained, trainedToFighter } from "@/lib/training";
 
 type Screen = "setup" | "loading" | "stats" | "battle" | "result";
 
@@ -46,12 +48,21 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
   const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
   const [newTitles, setNewTitles] = useState<string[]>([]);
   const [badgeTierA, setBadgeTierA] = useState(0);
+  const [opponentRecord, setOpponentRecord] = useState<{ wins: number; losses: number } | null>(null);
+  const [trainedName, setTrainedName] = useState<string | null>(null);
+  const [usedTrained, setUsedTrained] = useState(false);
+  const [trainingGains, setTrainingGains] = useState<string | null>(null);
 
   const [scanOpen, setScanOpen] = useState(false);
   const [qrFighter, setQrFighter] = useState<Fighter | null>(null);
   const [challengeFighter, setChallengeFighter] = useState<Fighter | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [dexOpen, setDexOpen] = useState(false);
+
+  useEffect(() => {
+    const t = loadTrained();
+    setTrainedName(t ? t.fighter.name : null);
+  }, []);
 
   function handleSetupChange(patch: Partial<SetupState>) {
     setSetup((prev) => ({ ...prev, ...patch }));
@@ -65,8 +76,36 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
     const b = scannedFighterB || generateFighter(setup.nameB, setup.textB, setup.forcedTypeB);
     setFighterA(a);
     setFighterB(b);
+    setUsedTrained(false);
     setBadgeTierA(computeBadgeTier());
+    const record = getRecord(opponentKeyFor(setup.xHandleB, b));
+    setOpponentRecord(record ? { wins: record.wins, losses: record.losses } : null);
     setScreen("loading");
+  }
+
+  function handleStartTrained() {
+    const trained = loadTrained();
+    if (!trained) return;
+    const a = trainedToFighter(trained);
+    const b = scannedFighterB || generateFighter(setup.nameB, setup.textB, setup.forcedTypeB);
+    setFighterA(a);
+    setFighterB(b);
+    setUsedTrained(true);
+    setBadgeTierA(computeBadgeTier());
+    const record = getRecord(opponentKeyFor(setup.xHandleB, b));
+    setOpponentRecord(record ? { wins: record.wins, losses: record.losses } : null);
+    setScreen("loading");
+  }
+
+  function handleRegisterTrained() {
+    if (!fighterA) return;
+    const existing = loadTrained();
+    if (existing) {
+      if (!window.confirm("今の育成キャラを上書きしますか？")) return;
+    }
+    registerTrained(fighterA);
+    setTrainedName(fighterA.name);
+    window.alert(`${fighterA.name}を育成登録しました！`);
   }
 
   function handleLoadingDone() {
@@ -92,17 +131,44 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
     if (!finalResult || !fighterA) return;
     if (result) setBattleResult(result);
     const didWin = finalResult.winner === fighterA;
-    if (fighterB) registerToDex(fighterB);
-    registerToDex(fighterA);
+    if (fighterB) {
+      registerToDex(fighterB);
+      const key = opponentKeyFor(setup.xHandleB, fighterB);
+      applyResult(key, fighterB.name, didWin);
+    }
+    if (!usedTrained) {
+      registerToDex(fighterA);
+    }
     const progress = applyBattleResultToProfile(didWin, fighterA);
     setNewTitles(progress.newTitles);
     setBadgeTierA(computeBadgeTier());
+    if (usedTrained) {
+      const trainingResult = applyTrainingResult(didWin);
+      if (trainingResult) {
+        if (trainingResult.capped) {
+          setTrainingGains("これ以上そだたないようだ（カンスト）");
+        } else {
+          const parts: string[] = [];
+          if (trainingResult.gains.hp) parts.push(`HP+${trainingResult.gains.hp}`);
+          if (trainingResult.gains.atk) parts.push(`攻撃+${trainingResult.gains.atk}`);
+          if (trainingResult.gains.def) parts.push(`防御+${trainingResult.gains.def}`);
+          if (trainingResult.gains.spd) parts.push(`素早+${trainingResult.gains.spd}`);
+          setTrainingGains(parts.length > 0 ? `そだった！ ${parts.join(" ")}` : null);
+        }
+      } else {
+        setTrainingGains(null);
+      }
+    } else {
+      setTrainingGains(null);
+    }
     setScreen("result");
   }
 
   function handleReset() {
     setBattleResult(null);
     setNewTitles([]);
+    setTrainingGains(null);
+    setUsedTrained(false);
     setScreen("setup");
   }
 
@@ -133,6 +199,8 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           onAchievements={() => setProfileOpen(true)}
           onDex={() => setDexOpen(true)}
           onStart={handleStart}
+          trainedName={trainedName}
+          onStartTrained={handleStartTrained}
         />
       )}
 
@@ -145,9 +213,11 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
           badgeTierA={badgeTierA}
           xHandleA={setup.xHandleA}
           xHandleB={setup.xHandleB}
+          opponentRecord={opponentRecord}
           onIssueQr={() => setQrFighter(fighterA)}
           onIssueChallenge={() => setChallengeFighter(fighterA)}
           onFight={handleFight}
+          onRegisterTrained={handleRegisterTrained}
         />
       )}
 
@@ -175,7 +245,14 @@ export function TsubuyakiBattler({ initialOpponent }: { initialOpponent?: Fighte
       )}
 
       {screen === "result" && fighterA && battleResult && (
-        <ResultScreen fighterA={fighterA} battleResult={battleResult} badgeTierA={badgeTierA} newTitles={newTitles} onReset={handleReset} />
+        <ResultScreen
+          fighterA={fighterA}
+          battleResult={battleResult}
+          badgeTierA={badgeTierA}
+          newTitles={newTitles}
+          trainingGains={trainingGains}
+          onReset={handleReset}
+        />
       )}
 
       <ScanOverlay

@@ -21,6 +21,7 @@ export interface Fighter {
   spd: number;
   moves: Move[];
   currentHp: number;
+  spriteSeed?: string;
 }
 
 export type Side = "A" | "B";

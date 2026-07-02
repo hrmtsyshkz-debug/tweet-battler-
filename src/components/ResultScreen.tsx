@@ -12,12 +12,14 @@ export function ResultScreen({
   battleResult,
   badgeTierA,
   newTitles,
+  trainingGains,
   onReset,
 }: {
   fighterA: Fighter;
   battleResult: BattleResult;
   badgeTierA: number;
   newTitles: string[];
+  trainingGains?: string | null;
   onReset: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,6 +70,7 @@ export function ResultScreen({
     <div className="panel">
       <div className="result">
         {newTitles.length > 0 && <div className="newtitle-banner">称号解除！「{newTitles.join("」「")}」</div>}
+        {trainingGains && <div className="newtitle-banner">{trainingGains}</div>}
         <canvas id="card" width={900} height={560} ref={canvasRef} />
         <div style={{ textAlign: "center", marginTop: 8 }}>
           <div style={{ fontSize: 14, color: "var(--ink-soft)" }}>決まり技：「{finishingMove || "不明の一撃"}」</div>

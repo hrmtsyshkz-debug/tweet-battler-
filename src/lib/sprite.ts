@@ -17,8 +17,21 @@ export function shadeColor(hex: string, percent: number): string {
   return "#" + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
 }
 
-function spriteSeedBase(fighter: Fighter): string {
+function computeSpriteSeedBase(fighter: Fighter): string {
   return fighter.name + "|" + fighter.typeKey + "|sprite|" + fighter.hp + "-" + fighter.atk + "-" + fighter.def + "-" + fighter.spd;
+}
+
+function spriteSeedBase(fighter: Fighter): string {
+  return fighter.spriteSeed || computeSpriteSeedBase(fighter);
+}
+
+/**
+ * Publicly exposes the seed string used for sprite/shiny/pattern selection so
+ * callers (e.g. training mode) can freeze it at a point in time via
+ * Fighter.spriteSeed, keeping a growing fighter's appearance stable.
+ */
+export function spriteSeedOf(fighter: Fighter): string {
+  return computeSpriteSeedBase(fighter);
 }
 
 export function isShinyFighter(f: Fighter): boolean {

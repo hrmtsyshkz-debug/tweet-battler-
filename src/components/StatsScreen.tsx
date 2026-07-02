@@ -7,25 +7,46 @@ export function StatsScreen({
   badgeTierA,
   xHandleA,
   xHandleB,
+  opponentRecord,
   onIssueQr,
   onIssueChallenge,
   onFight,
+  onRegisterTrained,
 }: {
   fighterA: Fighter;
   fighterB: Fighter;
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  opponentRecord?: { wins: number; losses: number } | null;
   onIssueQr: () => void;
   onIssueChallenge: () => void;
   onFight: (mode: "auto" | "manual") => void;
+  onRegisterTrained?: () => void;
 }) {
+  const hasRecord = !!opponentRecord && opponentRecord.wins + opponentRecord.losses >= 1;
   return (
     <>
       <div className="panel with-fight-bar">
         <div className="stats-grid">
-          <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} />
-          <FighterCard fighter={fighterB} mirror={true} badgeTier={0} xHandle={xHandleB} />
+          <div>
+            <FighterCard fighter={fighterA} mirror={false} badgeTier={badgeTierA} xHandle={xHandleA} />
+            {onRegisterTrained && (
+              <div style={{ textAlign: "center", marginTop: 6 }}>
+                <button className="small" type="button" onClick={onRegisterTrained}>
+                  このキャラを育成登録
+                </button>
+              </div>
+            )}
+          </div>
+          <div>
+            <FighterCard fighter={fighterB} mirror={true} badgeTier={0} xHandle={xHandleB} />
+            {hasRecord && opponentRecord && (
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", marginTop: 6 }}>
+                この相手との戦績：{opponentRecord.wins + opponentRecord.losses}戦{opponentRecord.wins}勝{opponentRecord.losses}敗
+              </div>
+            )}
+          </div>
         </div>
         <div className="cardaction-row">
           <button className="small" type="button" onClick={onIssueQr}>

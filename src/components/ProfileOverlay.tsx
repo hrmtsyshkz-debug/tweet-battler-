@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { loadProfile, saveProfile, titleLabel, toFighterFromSaved, xpToLevel } from "@/lib/profile";
+import { loadTrained, trainedToFighter, TrainedData } from "@/lib/training";
 import { Profile } from "@/lib/types";
 import { FighterCard } from "./FighterCard";
 
 export function ProfileOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [trained, setTrained] = useState<TrainedData | null>(null);
 
   useEffect(() => {
-    if (open) setProfile(loadProfile());
+    if (open) {
+      setProfile(loadProfile());
+      setTrained(loadTrained());
+    }
   }, [open]);
 
   if (!open || !profile) return null;
@@ -63,6 +68,15 @@ export function ProfileOverlay({ open, onClose }: { open: boolean; onClose: () =
             ))
           )}
         </div>
+        {trained && (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ margin: "10px 0 6px" }}>育成中のキャラ</label>
+            <FighterCard fighter={trainedToFighter(trained)} mirror={false} badgeTier={Math.min(3, Math.floor(lv / 5))} />
+            <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", marginTop: 6 }}>
+              {trained.battles}戦育成中・成長 {trained.totalGained}/60
+            </div>
+          </div>
+        )}
         {profile.lastFighter && (
           <div style={{ marginTop: 16 }}>
             <label style={{ margin: "10px 0 6px" }}>直近のあなたのキャラ</label>
