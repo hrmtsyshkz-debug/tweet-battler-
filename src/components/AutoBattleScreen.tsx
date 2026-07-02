@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BattleResult, Fighter, LogEntry, Side } from "@/lib/types";
-import { BattleStage } from "./BattleStage";
+import { BattleStage, HitFx } from "./BattleStage";
+import { SoundToggle } from "./SoundToggle";
+import { playEvent, playFaint, playHit, playMove } from "@/lib/sound";
 
 export function AutoBattleScreen({
   fighterA,
@@ -26,9 +28,12 @@ export function AutoBattleScreen({
   const [hpB, setHpB] = useState(fighterB.hp);
   const [animA, setAnimA] = useState("");
   const [animB, setAnimB] = useState("");
+  const [fxA, setFxA] = useState<HitFx | null>(null);
+  const [fxB, setFxB] = useState<HitFx | null>(null);
   const loglinesRef = useRef<HTMLDivElement>(null);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
+  const fxIdRef = useRef(0);
 
   useEffect(() => {
     setLines([]);
@@ -36,6 +41,8 @@ export function AutoBattleScreen({
     setHpB(fighterB.hp);
     setAnimA("");
     setAnimB("");
+    setFxA(null);
+    setFxB(null);
 
     let cancelled = false;
     const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -53,6 +60,13 @@ export function AutoBattleScreen({
       timeouts.push(raf as unknown as ReturnType<typeof setTimeout>);
     }
 
+    function triggerFx(side: Side, color: string, crit: boolean) {
+      const setFx = side === "A" ? setFxA : setFxB;
+      fxIdRef.current += 1;
+      setFx({ id: fxIdRef.current, color, crit });
+      timeouts.push(setTimeout(() => !cancelled && setFx(null), 400));
+    }
+
     let i = 0;
     function step() {
       if (cancelled) return;
@@ -64,9 +78,20 @@ export function AutoBattleScreen({
       setLines((prev) => [...prev, entry]);
       if (typeof entry.hpA === "number") setHpA(entry.hpA);
       if (typeof entry.hpB === "number") setHpB(entry.hpB);
-      if (entry.kind === "move" && entry.actor) triggerAnim(entry.actor, "attack-anim", false);
-      else if (entry.kind === "hit" && entry.target) triggerAnim(entry.target, "hit-anim", false);
-      else if (entry.kind === "faint" && entry.actor) triggerAnim(entry.actor, "faint-anim", true);
+      if (entry.kind === "move" && entry.actor) {
+        triggerAnim(entry.actor, "attack-anim", false);
+        playMove();
+      } else if (entry.kind === "hit" && entry.target) {
+        triggerAnim(entry.target, "hit-anim", false);
+        const attacker = entry.actor === "A" ? fighterA : entry.actor === "B" ? fighterB : null;
+        if (attacker) triggerFx(entry.target, attacker.type.color, !!entry.crit);
+        playHit(!!entry.crit);
+      } else if (entry.kind === "faint" && entry.actor) {
+        triggerAnim(entry.actor, "faint-anim", true);
+        playFaint();
+      } else if (entry.kind === "event") {
+        playEvent();
+      }
       i++;
       timeouts.push(setTimeout(step, 550));
     }
@@ -95,6 +120,8 @@ export function AutoBattleScreen({
         badgeTierA={badgeTierA}
         xHandleA={xHandleA}
         xHandleB={xHandleB}
+        fxA={fxA}
+        fxB={fxB}
       />
       <div className="battlebox">
         <div className="loglines" ref={loglinesRef}>
@@ -105,6 +132,7 @@ export function AutoBattleScreen({
           ))}
         </div>
       </div>
+      <SoundToggle />
     </div>
   );
 }

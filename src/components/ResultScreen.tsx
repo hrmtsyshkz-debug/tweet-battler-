@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { drawResultCard } from "@/lib/card";
 import { encodeOgData } from "@/lib/ogPayload";
+import { playVictory } from "@/lib/sound";
 import { BattleResult, Fighter } from "@/lib/types";
 
 export function ResultScreen({
@@ -19,6 +20,7 @@ export function ResultScreen({
   onReset: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const victoryPlayedRef = useRef(false);
   const { winner, loser, finishingMove } = battleResult;
   const winnerIsPlayer = winner === fighterA;
 
@@ -27,6 +29,13 @@ export function ResultScreen({
       drawResultCard(canvasRef.current, winner, loser, finishingMove, winnerIsPlayer ? badgeTierA : 0);
     }
   }, [winner, loser, finishingMove, winnerIsPlayer, badgeTierA]);
+
+  useEffect(() => {
+    if (victoryPlayedRef.current) return;
+    victoryPlayedRef.current = true;
+    playVictory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleDownload() {
     const canvas = canvasRef.current;

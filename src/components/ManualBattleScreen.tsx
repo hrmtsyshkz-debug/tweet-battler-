@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { concludeBattle, createBattleState, peekNextActor, runNextAction } from "@/lib/battle";
 import { BattleResult, Fighter, LogEntry, Side } from "@/lib/types";
-import { BattleStage } from "./BattleStage";
+import { BattleStage, HitFx } from "./BattleStage";
+import { SoundToggle } from "./SoundToggle";
+import { playEvent, playFaint, playHit, playMove } from "@/lib/sound";
 
 export function ManualBattleScreen({
   fighterA,
@@ -25,11 +27,14 @@ export function ManualBattleScreen({
   const [hpB, setHpB] = useState(fighterB.hp);
   const [animA, setAnimA] = useState("");
   const [animB, setAnimB] = useState("");
+  const [fxA, setFxA] = useState<HitFx | null>(null);
+  const [fxB, setFxB] = useState<HitFx | null>(null);
   const [awaitingMove, setAwaitingMove] = useState(false);
   const loglinesRef = useRef<HTMLDivElement>(null);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
   const pickMoveRef = useRef<(moveIdx: number) => void>(() => {});
+  const fxIdRef = useRef(0);
 
   useEffect(() => {
     fighterA.currentHp = fighterA.hp;
@@ -44,6 +49,8 @@ export function ManualBattleScreen({
     setHpB(fighterB.hp);
     setAnimA("");
     setAnimB("");
+    setFxA(null);
+    setFxB(null);
     setAwaitingMove(false);
 
     function triggerAnim(side: Side, cls: string, permanent: boolean) {
@@ -59,6 +66,13 @@ export function ManualBattleScreen({
       timeouts.push(raf as unknown as ReturnType<typeof setTimeout>);
     }
 
+    function triggerFx(side: Side, color: string, crit: boolean) {
+      const setFx = side === "A" ? setFxA : setFxB;
+      fxIdRef.current += 1;
+      setFx({ id: fxIdRef.current, color, crit });
+      timeouts.push(setTimeout(() => !cancelled && setFx(null), 400));
+    }
+
     function revealEntries(entries: LogEntry[], idx: number, after: () => void) {
       if (cancelled) return;
       if (idx >= entries.length) {
@@ -70,9 +84,20 @@ export function ManualBattleScreen({
       allLog.push(entry);
       if (typeof entry.hpA === "number") setHpA(entry.hpA);
       if (typeof entry.hpB === "number") setHpB(entry.hpB);
-      if (entry.kind === "move" && entry.actor) triggerAnim(entry.actor, "attack-anim", false);
-      else if (entry.kind === "hit" && entry.target) triggerAnim(entry.target, "hit-anim", false);
-      else if (entry.kind === "faint" && entry.actor) triggerAnim(entry.actor, "faint-anim", true);
+      if (entry.kind === "move" && entry.actor) {
+        triggerAnim(entry.actor, "attack-anim", false);
+        playMove();
+      } else if (entry.kind === "hit" && entry.target) {
+        triggerAnim(entry.target, "hit-anim", false);
+        const attacker = entry.actor === "A" ? fighterA : entry.actor === "B" ? fighterB : null;
+        if (attacker) triggerFx(entry.target, attacker.type.color, !!entry.crit);
+        playHit(!!entry.crit);
+      } else if (entry.kind === "faint" && entry.actor) {
+        triggerAnim(entry.actor, "faint-anim", true);
+        playFaint();
+      } else if (entry.kind === "event") {
+        playEvent();
+      }
       timeouts.push(setTimeout(() => revealEntries(entries, idx + 1, after), 550));
     }
 
@@ -142,6 +167,8 @@ export function ManualBattleScreen({
         badgeTierA={badgeTierA}
         xHandleA={xHandleA}
         xHandleB={xHandleB}
+        fxA={fxA}
+        fxB={fxB}
       />
       {awaitingMove && (
         <div className="move-picker">
@@ -165,6 +192,7 @@ export function ManualBattleScreen({
           ))}
         </div>
       </div>
+      <SoundToggle />
     </div>
   );
 }

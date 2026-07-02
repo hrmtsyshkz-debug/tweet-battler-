@@ -44,6 +44,12 @@ function HpBox({
   );
 }
 
+export interface HitFx {
+  id: number;
+  color: string;
+  crit: boolean;
+}
+
 export function BattleStage({
   fighterA,
   fighterB,
@@ -54,6 +60,8 @@ export function BattleStage({
   badgeTierA,
   xHandleA,
   xHandleB,
+  fxA,
+  fxB,
 }: {
   fighterA: Fighter;
   fighterB: Fighter;
@@ -64,6 +72,8 @@ export function BattleStage({
   badgeTierA: number;
   xHandleA?: string;
   xHandleB?: string;
+  fxA?: HitFx | null;
+  fxB?: HitFx | null;
 }) {
   return (
     <div className="battle-scene">
@@ -73,9 +83,23 @@ export function BattleStage({
       <HpBox side="a" name={fighterA.name} level={calcLevel(fighterA)} hp={hpA} maxHp={fighterA.hp} xHandle={xHandleA} />
       <div className={"sprite-wrap opp" + (animB ? " " + animB : "")}>
         <SpriteCanvas fighter={fighterB} mirror={true} badgeTier={0} size={120} />
+        {fxB && (
+          <div
+            key={fxB.id}
+            className={"fx-burst" + (fxB.crit ? " crit" : "")}
+            style={{ background: fxB.color }}
+          />
+        )}
       </div>
       <div className={"sprite-wrap player" + (animA ? " " + animA : "")}>
         <SpriteCanvas fighter={fighterA} mirror={false} badgeTier={badgeTierA} size={160} />
+        {fxA && (
+          <div
+            key={fxA.id}
+            className={"fx-burst" + (fxA.crit ? " crit" : "")}
+            style={{ background: fxA.color }}
+          />
+        )}
       </div>
     </div>
   );
